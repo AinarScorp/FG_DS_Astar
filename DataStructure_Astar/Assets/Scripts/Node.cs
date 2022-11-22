@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using TMPro;
 
@@ -16,6 +17,8 @@ public class Node
     public int combinedDistance;
     public int fromStartDistance;
     public TextMeshPro debugText;
+
+    public event Action<Node> OnWalkableChanged;
     
     public Coordinates Coordinates => coordinates;
     public Node CameFromNode => cameFromNode;
@@ -30,6 +33,7 @@ public class Node
     public void SetWalkable(bool value)
     {
         isWalkable = value;
+        OnWalkableChanged?.Invoke(this);
     }
     
     public void AssignMangattanDistance(int value)

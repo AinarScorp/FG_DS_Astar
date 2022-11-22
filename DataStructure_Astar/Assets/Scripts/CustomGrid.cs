@@ -50,9 +50,6 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
                 storedGridArrayElements.Add(new Package<TGridType>(x, y, gridArray[x, y]));
             }
         }
-        
-   
-
     }
     
     

@@ -8,8 +8,11 @@ using TMPro;
 [ExecuteAlways]
 public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
 {
+    
+    [SerializeField] Color nonWalkableColorSprite = Color.black;
+    [SerializeField] Color walkableColorSprite = Color.white;
     [SerializeField] SpriteRenderer square1x1;
-    [SerializeField, HideInInspector]CustomGrid<Node> nodeGrid;
+    [SerializeField]CustomGrid<Node> nodeGrid;
 
     
     [SerializeField] Transform parentForTexts;
@@ -59,6 +62,7 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         {
             spriteArray[package.Index0, package.Index1] = package.Element;
         }
+        
     }
     #endregion
 
@@ -67,7 +71,18 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         DestroyItselfIfGeneratorExists();
     }
 
-    
+    void OnEnable()
+    {
+        if (nodeGrid == null)
+        {
+            return;
+        }
+        foreach (var node in nodeGrid.GridArray)
+        {
+            MakeNodeNonWalkableVisuals(node);
+            node.OnWalkableChanged += MakeNodeNonWalkableVisuals;
+        }
+    }
 
     void DestroyItselfIfGeneratorExists()
     {
@@ -83,7 +98,6 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     void OnDestroy()
     {
         DeleteCoordsText();
-
     }
 
     public void CreateGrid(int width, int height, Vector2 cellSize)
@@ -92,7 +106,8 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         DeleteSprites();
 
         nodeGrid = new CustomGrid<Node>(width, height, cellSize,transform.position, (coords) => new Node(coords));
-        
+
+ 
         storedGridArrayElements = new List<Package<SpriteRenderer>>();
         spriteArray = new SpriteRenderer[nodeGrid.Width, nodeGrid.Height];
 
@@ -103,12 +118,40 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
                 Vector3 position = nodeGrid.GetWorldPosFromCoords(nodeGrid.GridArray[x, y].Coordinates);
                 spriteArray[x, y] = Instantiate(square1x1, position, Quaternion.identity, parentForSprites);
                 spriteArray[x, y].transform.localScale = new Vector3(nodeGrid.CellSize.x, nodeGrid.CellSize.y, 1);
-
+                spriteArray[x, y].color = walkableColorSprite;
             }
         }
+        SceneVisibilityManager.instance.DisablePicking(parentForSprites.gameObject, true);
+        
+        foreach (var node in nodeGrid.GridArray)
+        {
+            node.OnWalkableChanged += MakeNodeNonWalkableVisuals;
+        }
+    }
+
+    public void SetSpriteColor(Node node, Color newColor)
+    {
+        spriteArray[node.Coordinates.x, node.Coordinates.y].color = newColor;
 
     }
 
+    public Color GetSpriteColor(Node node)
+    {
+        return spriteArray[node.Coordinates.x, node.Coordinates.y].color;
+    }
+
+    void MakeNodeNonWalkableVisuals(Node node)
+    {
+        if (node.IsWalkable)
+        {
+            SetSpriteColor(node,walkableColorSprite);
+        }
+        else
+        {
+            SetSpriteColor(node,nonWalkableColorSprite);
+        }
+    }
+    
 
     void DeleteSprites()
     {

@@ -32,8 +32,6 @@ public class AstarController : EditorWindow
     
     //Player stuff
     Vector2Int playerPosition;
-    bool positioningPlayer;
-    bool testingPathFinding;
     
     
     
@@ -162,7 +160,7 @@ public class AstarController : EditorWindow
 
     void OnGUI()
     {
-        InsertLabel((nodeGrid==null).ToString());
+        InsertLabel($"Node grid is null: {StringsGUI.YesNoTextFromBool(nodeGrid==null)}");
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
 
@@ -186,9 +184,7 @@ public class AstarController : EditorWindow
 
         InsertLabel("Player Controls");
 
-        if (testPlayer == null)
-        {
-            positioningPlayer = false;
+ 
             playerPosition = EditorGUILayout.Vector2IntField("Player Start Pos", playerPosition);
             ButtonGUI("Create Player", () =>
             {
@@ -198,34 +194,20 @@ public class AstarController : EditorWindow
                 {
                     return;
                 }
-                
-                testPlayer = Resources.Load<Player>("Player");
+
+                if (testPlayer == null)
+                {
+                    testPlayer = Resources.Load<Player>("Player");
+                    testPlayer = Instantiate(testPlayer);
+                }
                 Undo.RecordObject(testPlayer, "Generator to save");
-                testPlayer = Instantiate(testPlayer);
 
                 
-                testPlayer.CreatePlayer(nodeGrid,startPlayerPosNode);
+                testPlayer.CreatePlayer(generator,startPlayerPosNode);
 
             });
-        }
-        else
-        {
-            ButtonGUI($"Positioning Player: {StringsGUI.YesNoTextFromBool(positioningPlayer)}", () =>
-            {
-                settingWalls = false;
-                positioningPlayer = !positioningPlayer;
-                testingPathFinding = false;
-            });
-            ButtonGUI($"Testing PathFinding: {StringsGUI.YesNoTextFromBool(testingPathFinding)}", () =>
-            {
-                settingWalls = false;
-                positioningPlayer = false;
-                testingPathFinding = !testingPathFinding;
-            });
-        }
         
-        
-        
+
     }
     void SetupPlayer(bool tryToFind = false)
     {
@@ -235,7 +217,7 @@ public class AstarController : EditorWindow
         }
         if (testPlayer !=null)
         {
-            testPlayer.ReassignGrid(nodeGrid);
+            //testPlayer.ReassignGrid(nodeGrid);
         }
 
     }
@@ -246,7 +228,6 @@ public class AstarController : EditorWindow
 
         ButtonGUI($"Setting Walls: {StringsGUI.YesNoTextFromBool(settingWalls)}", () =>
         {
-            positioningPlayer = false;
             settingWalls = !settingWalls;
         });
         InsertSpace();
@@ -327,16 +308,10 @@ public class AstarController : EditorWindow
         nodeGrid.VisualiseGrid(lineColor, lineThickness);
 
 
-        VisualiseWalls();
 
 
-        if (!settingWalls && !positioningPlayer && !testingPathFinding) return;
-
-        if (settingWalls && positioningPlayer && testingPathFinding)
-        {
-            Debug.Log("this is a problem");
-            return;
-        }
+        if (!settingWalls) return;
+        
 
         Event current = Event.current;
         Vector2 mousePosition = current.mousePosition;
@@ -360,32 +335,15 @@ public class AstarController : EditorWindow
                     clickedNode.SetWalkable(!clickedNode.IsWalkable);
 
                 }
-                else if (positioningPlayer)
-                {
-                    Undo.RecordObject(testPlayer, "Generator to save");
-                    playerPosition = new Vector2Int(clickedNode.Coordinates.x, clickedNode.Coordinates.y);
-                    testPlayer.SetNode(clickedNode);
-                }
-                // else if (testingPathFinding)
-                // {
-                //     Undo.RecordObject(testPlayer, "Player To Save");
-                //     if (clickedNode.IsWalkable)
-                //     {
-                //         Debug.Log("It worked");
-                //         testPlayer.FindPath(clickedNode);
-                //     }
-                // }
-                
             }
         }
 
 
         SceneView.RepaintAll();
-
-        // if (current.type == EventType.Layout)
-        //     HandleUtility.AddDefaultControl(GUIUtility.GetControlID(GetHashCode(), FocusType.Passive));
     }
 
+    
+    //Makes crosses over grid, but not used anymore
     void VisualiseWalls()
     {
         Handles.color = Color.black;

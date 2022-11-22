@@ -4,30 +4,29 @@ using UnityEngine;
 
 public class Pathfinding : MonoBehaviour
 {
-    CustomGrid<Node> nodeGrid;
-    
+    [SerializeField] float textFontSize = 10;
+    [SerializeField] float timeSeconds = 0.5f;
+    CustomGrid<Node> nodeGrid => generator.NodeGrid;
+    GridGenerator generator;
     List<Node> openList;
     List<Node> closedList;
+
     void FindGrid()
     {
-        GridGenerator generator = FindObjectOfType<GridGenerator>();
-        if (generator !=null && generator.NodeGrid !=null)
-        {
-            nodeGrid = generator.NodeGrid;
-        }
+        generator = FindObjectOfType<GridGenerator>();
     }
 
-    public List<Node> FindPath(Coordinates startCoords, Coordinates endCoords)
+
+    public IEnumerator FindPath(Coordinates startCoords, Coordinates endCoords)
     {
         
-        if (nodeGrid == null)
+        if (generator == null)
         {
-
             FindGrid();
         }
-        if (nodeGrid == null)
+        if (generator == null)
         {
-            return null;
+            yield break;
         }
 
         Node startNode = nodeGrid.GetGridType(startCoords);
@@ -35,17 +34,12 @@ public class Pathfinding : MonoBehaviour
         if (startNode == null || endNode == null)
         {
             Debug.Log("INVALID PATH");
-            return null;
+            yield break;
         }
 
-
+        
         foreach (var node in nodeGrid.GridArray)
         {
-            if (node.debugText !=null)
-            {
-                Debug.Log("s");
-                DestroyImmediate(node.debugText.gameObject);
-            }
             node.ResetNode();
         }
         openList = new List<Node> { startNode };
@@ -58,10 +52,12 @@ public class Pathfinding : MonoBehaviour
         {
 
             Node currentNode = GetLowestCombinedCostNode(openList);
+
             if (currentNode == endNode)
             {
                 //Found path
-                return CalculatePath(endNode);
+                yield return CalculatePath(endNode);
+                yield break;
             }
   
 
@@ -69,26 +65,27 @@ public class Pathfinding : MonoBehaviour
             closedList.Add(currentNode);
             foreach (Node neighbourNode in GetNeighbourList(currentNode))
             {
-
+                yield return new WaitForSeconds(timeSeconds);
                 if (closedList.Contains(neighbourNode))
                 {
+                    if (neighbourNode.IsWalkable)
+                    {
+                        generator.SetSpriteColor(neighbourNode, Color.green);
+                        
+                    }
                     continue;
                 }
                 if (!neighbourNode.IsWalkable)
                 {
-
                     closedList.Add(neighbourNode);
+                    generator.SetSpriteColor(neighbourNode, Color.red);
+                    continue;
                 }
 
 
-
+                generator.SetSpriteColor(neighbourNode, Color.yellow);
                 int priorityCost = currentNode.fromStartDistance + CalculateManhattanCost(currentNode, neighbourNode);
-                 if (neighbourNode.debugText !=null)
-                 {
-                     Debug.Log("ssss");
-                     DestroyImmediate(neighbourNode.debugText.gameObject);
-                 }
-                 neighbourNode.CreateText("boo", Color.cyan, 24, nodeGrid.GetWorldPosFromCoords(neighbourNode.Coordinates),this.transform);
+ 
                 if (priorityCost<neighbourNode.fromStartDistance)
                 {
                     neighbourNode.AssignCameFromNode(currentNode);
@@ -99,12 +96,15 @@ public class Pathfinding : MonoBehaviour
                     {
                         openList.Add(neighbourNode);
                     }
+                    generator.SetSpriteColor(neighbourNode,Color.blue);
                 }
+                
             }
+
         }
 
         Debug.Log("No Path found");
-        return null;
+        yield break;
     }
 
     List<Node> CalculatePath(Node endNode)
@@ -205,9 +205,9 @@ public class Pathfinding : MonoBehaviour
         posRight.x += nodeGrid.CellSize.x /2;
 
         
-        node.CreateText(node.fromStartDistance.ToString(),Color.cyan, 30,posleft, this.transform);
-        node.CreateText(node.combinedDistance.ToString(),Color.cyan, 30,pos, this.transform);
-        node.CreateText(node.ManhattanDistance.ToString(),Color.cyan, 30,posRight, this.transform);
+        node.CreateText(node.fromStartDistance.ToString(),Color.cyan, textFontSize,posleft, this.transform);
+        node.CreateText(node.combinedDistance.ToString(),Color.cyan, textFontSize,pos, this.transform);
+        node.CreateText(node.ManhattanDistance.ToString(),Color.cyan, textFontSize,posRight, this.transform);
     }
 
 }

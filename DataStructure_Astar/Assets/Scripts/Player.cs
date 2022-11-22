@@ -4,16 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-
+[ExecuteAlways]
 public class Player : MonoBehaviour
 {
     [SerializeField] Color playerColor = Color.green;
     [SerializeField] float playerRadius = 2;
-    Node currentNode;
-    CustomGrid<Node> currentGrid;
+    [SerializeField]Node currentNode;
+    [SerializeField]GridGenerator generator;
+    CustomGrid<Node> currentGrid => generator.NodeGrid;
 
     [SerializeField] Pathfinding pathfinding;
 
+    
 
     void Awake()
     {
@@ -32,12 +34,12 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void ReassignGrid(CustomGrid<Node> grid)
-    {
-        currentGrid = grid;
-    }
+    // public void ReassignGrid(CustomGrid<Node> grid)
+    // {
+    //     currentGrid = grid;
+    // }
 
-    public void CreatePlayer(CustomGrid<Node> grid, Node startingNode)
+    public void CreatePlayer(GridGenerator generator, Node startingNode)
     {
         if (!startingNode.IsWalkable)
         {
@@ -45,22 +47,39 @@ public class Player : MonoBehaviour
         }
 
         currentNode = startingNode;
-        this.currentGrid = grid;
+        this.generator = generator;
     }
 
 
     public IEnumerator FindPath(Node endNode)
     {
-        List<Node> listOfNodes = pathfinding.FindPath(currentNode.Coordinates, endNode.Coordinates);
+        if (pathfinding ==null)
+        {
+            pathfinding = FindObjectOfType<Pathfinding>();
+        }
+        IEnumerator target = pathfinding.FindPath(currentNode.Coordinates, endNode.Coordinates);
+
+        yield return target;
+        target = pathfinding.FindPath(currentNode.Coordinates, endNode.Coordinates);
+        List<Node> listOfNodes = new List<Node>();
+        while (target.MoveNext())
+        {
+            if (target.Current?.GetType() == typeof(List<Node>))
+            {
+
+                listOfNodes = (List<Node>)target.Current;
+                break;
+            }
+        }
         // foreach (var node in listOfNodes)
         // {
         //     Debug.Log($"{node.Coordinates.x} : {node.Coordinates.y}");
         //     
         // }
 
-        yield return new WaitForSeconds(2);
         foreach (var node in listOfNodes)
         {
+            //generator.SetSpriteColor(node,Color.cyan);
             currentNode = node;
             yield return new WaitForSeconds(2);
 
@@ -74,9 +93,13 @@ public class Player : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Debug.Log(mousePos);
             currentGrid.GetGridCoordsFromWorld(mousePos, out int x, out int y);
-            currentNode = currentGrid.GetGridType(x, y);
+            
+            Node destinationNode = currentGrid.GetGridType(x, y);
+            if (destinationNode !=null)
+            {
+                StartCoroutine(FindPath(destinationNode));
+            }
         }
     }
 
@@ -97,6 +120,7 @@ public class Player : MonoBehaviour
 
         Vector3 playerPos = currentGrid.GetWorldPosFromCoords(currentNode.Coordinates);
 
+        transform.position = playerPos;
         Gizmos.color = playerColor;
         Gizmos.DrawSphere(playerPos, playerRadius);
     }
