@@ -132,7 +132,7 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     public void SetSpriteColor(Node node, Color newColor)
     {
         spriteArray[node.Coordinates.x, node.Coordinates.y].color = newColor;
-
+    
     }
 
     public Color GetSpriteColor(Node node)

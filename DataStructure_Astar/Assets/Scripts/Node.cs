@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
 [System.Serializable]
-public class Node
+public class Node: IComparable<Node>
 {
     // public Coordinates Coordinates { get; private set; }
     // public Node CameFromNode{ get; private set; }
@@ -49,15 +50,46 @@ public class Node
     public void CalculateCombinedDistance()
     {
         combinedDistance = manhattanDistance + fromStartDistance;
+        if (debugText == null)
+        {
+            return;
+        }
+        debugText.text = combinedDistance.ToString();
     }
 
+    void ChangeText(string text)
+    {
+        if (debugText != null)
+        {
+            return;
+        }
+        debugText.text = text;
+    }
+
+    public void CreateText(TextMeshPro textCube,string text, Color textColor)
+    {
+        textCube.text = text;
+        textCube.color = textColor;
+        debugText = textCube;
+
+        
+        
+    }
     public void CreateText(string text, Color textColor, float textFontSize,Vector3 position,Transform parent)
     {
-                
+
+        if (debugText != null)
+        {
+            return;
+        }
         
+
         GameObject newText = new GameObject($"{coordinates.x};{coordinates.y}", typeof(TextMeshPro));
         newText.transform.position = position;
         TextMeshPro textMeshPro = newText.GetComponent<TextMeshPro>();
+        textMeshPro.rectTransform.sizeDelta = new Vector2(10, 10);
+
+        
         textMeshPro.text = text;
         textMeshPro.alignment = TextAlignmentOptions.Center;
         textMeshPro.color = textColor;
@@ -78,5 +110,20 @@ public class Node
         cameFromNode = null;
 
         debugText = null;
+        
+    }
+
+
+    public int CompareTo(Node otherNode)
+    {
+        if (combinedDistance < otherNode.combinedDistance)
+        {
+            return 1;
+        }
+        if (combinedDistance > otherNode.combinedDistance)
+        {
+            return -1;
+        }
+        return 0;
     }
 }

@@ -1,18 +1,41 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Algorithms;
 using UnityEngine;
 
-public class PriorityQueue : MonoBehaviour
+namespace Algorithms
 {
-    // Start is called before the first frame update
-    void Start() 
+    [Serializable]
+    public class PriorityQueue<TElement> where TElement : IComparable<TElement>
     {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        MinBinaryHeap<TElement> heap;
+
+        public PriorityQueue(int capacity)
+        {
+            heap = new MinBinaryHeap<TElement>(capacity);
+        }
+
+        public TElement Peek()
+        {
+            return heap.Peek();
+        }
+        public void Insert(TElement key)
+        {
+            heap.Insert(key);
+        }
+        public TElement ExtractMin()
+        {
+           return heap.ExtractMin();
+        }
+
+        public bool IsEmpty()
+        {
+            return heap.currentHeapSize < 1;
+        }
+
+
     }
+    
 }
