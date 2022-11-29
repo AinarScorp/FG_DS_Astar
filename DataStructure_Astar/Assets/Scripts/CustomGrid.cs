@@ -126,19 +126,39 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
     {
         Handles.color = gridColor;
 
+        // for (int x = 0; x < width; x++)
+        // {
+        //     for (int y = 0; y < height; y++)
+        //     {
+        //         Vector3 startLinePos = new Vector3(x * cellSize.x, y * cellSize.y) + originPosition;
+        //         Vector3 endLineUp = new Vector3(x * cellSize.x, (y + 1) * cellSize.y) + originPosition;
+        //         Vector3 endLineRight = new Vector3((x + 1) * cellSize.x, y * cellSize.y) + originPosition;
+        //
+        //         Handles.DrawLine(startLinePos, endLineRight, lineThickness);
+        //         Handles.DrawLine(startLinePos, endLineUp, lineThickness);
+        //
+        //     }
+        // }
+
         for (int x = 0; x < width; x++)
         {
-            for (int y = 0; y < height; y++)
-            {
-                Vector3 startLinePos = new Vector3(x * cellSize.x, y * cellSize.y) + originPosition;
-                Vector3 endLineUp = new Vector3(x * cellSize.x, (y + 1) * cellSize.y) + originPosition;
-                Vector3 endLineRight = new Vector3((x + 1) * cellSize.x, y * cellSize.y) + originPosition;
-        
-                Handles.DrawLine(startLinePos, endLineRight, lineThickness);
+
+                Vector3 startLinePos = new Vector3(x * cellSize.x, 0) + originPosition;
+                Vector3 endLineUp = new Vector3(x * cellSize.x, height * cellSize.y) + originPosition;
+
                 Handles.DrawLine(startLinePos, endLineUp, lineThickness);
         
-            }
+            
         }
+
+        for (int y = 0; y < height; y++)
+        {
+            Vector3 startLinePos = new Vector3(0, y * cellSize.y) + originPosition;
+            Vector3 endLineRight = new Vector3(width * cellSize.x, y * cellSize.y) + originPosition;
+            Handles.DrawLine(startLinePos, endLineRight, lineThickness);
+
+        }
+        
 
         Vector3 finishingLineCorner = new Vector3(width * cellSize.x, height * cellSize.y) + originPosition;
         Vector3 finishingLineTop = new Vector3(0, height * cellSize.y) + originPosition;

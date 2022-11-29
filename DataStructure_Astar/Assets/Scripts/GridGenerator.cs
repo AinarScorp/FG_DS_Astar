@@ -128,13 +128,23 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
             node.OnWalkableChanged += MakeNodeNonWalkableVisuals;
         }
     }
+    public void SetTempSpriteColor(Node node, Color newTempColor)
+    {
+        node.tempColor = newTempColor;
+        spriteArray[node.Coordinates.x, node.Coordinates.y].color = newTempColor;
+    }
 
     public void SetSpriteColor(Node node, Color newColor)
     {
+        node.currentColor = newColor;
         spriteArray[node.Coordinates.x, node.Coordinates.y].color = newColor;
     
     }
 
+    public void RestoreColor(Node node)
+    {
+        spriteArray[node.Coordinates.x, node.Coordinates.y].color = node.currentColor;
+    }
     public Color GetSpriteColor(Node node)
     {
         return spriteArray[node.Coordinates.x, node.Coordinates.y].color;

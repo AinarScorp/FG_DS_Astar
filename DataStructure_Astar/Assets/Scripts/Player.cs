@@ -15,8 +15,10 @@ public class Player : MonoBehaviour
 
     [SerializeField] Pathfinding pathfinding;
 
-    
+    [SerializeField] float colorTIme = 2;
+    List<Node> listOfNodes;
 
+    Coroutine findingPath;
     void Awake()
     {
         DestroyItselfIfPlayerExists();
@@ -57,19 +59,29 @@ public class Player : MonoBehaviour
         {
             pathfinding = FindObjectOfType<Pathfinding>();
         }
+
+
         IEnumerator target = pathfinding.FindPath(currentNode.Coordinates, endNode.Coordinates);
 
         yield return target;
         target = pathfinding.FindPath(currentNode.Coordinates, endNode.Coordinates);
-        List<Node> listOfNodes = new List<Node>();
+        listOfNodes = new List<Node>();
         while (target.MoveNext())
         {
             if (target.Current?.GetType() == typeof(List<Node>))
             {
 
+                Debug.LogWarning("hereeee");
                 listOfNodes = (List<Node>)target.Current;
                 break;
             }
+        }
+
+        foreach (var node in listOfNodes)
+        {
+            generator.SetSpriteColor(node,Color.blue);
+            yield return new WaitForSeconds(colorTIme);
+
         }
         // foreach (var node in listOfNodes)
         // {
@@ -81,10 +93,31 @@ public class Player : MonoBehaviour
         {
             //generator.SetSpriteColor(node,Color.cyan);
             currentNode = node;
+            this.transform.position = currentGrid.GetWorldPosFromCoords(currentNode.Coordinates);
             yield return new WaitForSeconds(2);
 
             
         }
+
+        findingPath = null;
+    }
+    public void FindPathTest(Node endNode)
+    {
+        if (pathfinding ==null)
+        {
+            pathfinding = FindObjectOfType<Pathfinding>();
+        }
+        
+        listOfNodes = pathfinding.FindPathTest(currentNode.Coordinates, endNode.Coordinates);
+
+
+        foreach (var node in listOfNodes)
+        {
+            generator.SetSpriteColor(node,Color.blue);
+        }
+
+
+
     }
 
 
@@ -96,10 +129,19 @@ public class Player : MonoBehaviour
             currentGrid.GetGridCoordsFromWorld(mousePos, out int x, out int y);
             
             Node destinationNode = currentGrid.GetGridType(x, y);
-            if (destinationNode !=null)
+            if (destinationNode != null)
             {
-                StartCoroutine(FindPath(destinationNode));
+                FindPathTest(destinationNode);
             }
+            // if (destinationNode !=null)
+            // {
+            //     if (findingPath!=null)
+            //     {
+            //         StopCoroutine(findingPath);
+            //         findingPath = null;
+            //     }
+            //     findingPath = StartCoroutine(FindPath(destinationNode));
+            // }
         }
     }
 

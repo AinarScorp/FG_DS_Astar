@@ -19,7 +19,7 @@ public class TestingPQ : MonoBehaviour
         priorityQueue = new PriorityQueue<int>(array.Length);
         foreach (var integet in array)
         {
-            priorityQueue.Insert(integet);
+            priorityQueue.Enqueue(integet);
         }
 
 

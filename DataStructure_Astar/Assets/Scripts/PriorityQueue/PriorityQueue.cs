@@ -21,7 +21,7 @@ namespace Algorithms
         {
             return heap.Peek();
         }
-        public void Insert(TElement key)
+        public void Enqueue(TElement key)
         {
             heap.Insert(key);
         }

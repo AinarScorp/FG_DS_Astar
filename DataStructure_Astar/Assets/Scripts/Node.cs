@@ -12,24 +12,24 @@ public class Node: IComparable<Node>
     // public int ManhattanDistance{ get; private set; }
 
     [SerializeField]Coordinates coordinates;
-    [SerializeField]Node cameFromNode;
     [SerializeField] bool isWalkable = true;
-    [SerializeField] int manhattanDistance;
-    public int combinedDistance;
-    public int fromStartDistance;
+    [SerializeField] int estimateCost; // mangattan Distance
+    int combinedCost;
+    int fromStartCost;
     public TextMeshPro debugText;
+    public Color currentColor;
+    public Color tempColor;
 
     public event Action<Node> OnWalkableChanged;
     
     public Coordinates Coordinates => coordinates;
-    public Node CameFromNode => cameFromNode;
+    //public Node CameFromNode => cameFromNode;
     public bool IsWalkable => isWalkable;
-    public int ManhattanDistance => manhattanDistance;
 
     public Node(Coordinates coordinates)
     {
         this.coordinates = coordinates;
-        manhattanDistance = 0;
+        estimateCost = 0;
     }
     public void SetWalkable(bool value)
     {
@@ -37,33 +37,37 @@ public class Node: IComparable<Node>
         OnWalkableChanged?.Invoke(this);
     }
     
-    public void AssignMangattanDistance(int value)
+    public void AssignMangattanCost(int value)
     {
-        manhattanDistance = value;
+        estimateCost = value;
     }
 
-    public void AssignCameFromNode(Node newNode)
+
+    public void AssignCosts(int newFromStartCost, int newEstimateCost)
     {
-        cameFromNode = newNode;
+        fromStartCost = newFromStartCost;
+        estimateCost = newEstimateCost;
+        combinedCost = fromStartCost + estimateCost;
+        ChangeText();
+    }
+    public void CalculateCombinedCost()
+    {
+        combinedCost = estimateCost + fromStartCost;
+
+        ChangeText();
     }
 
-    public void CalculateCombinedDistance()
-    {
-        combinedDistance = manhattanDistance + fromStartDistance;
-        if (debugText == null)
-        {
-            return;
-        }
-        debugText.text = combinedDistance.ToString();
-    }
-
-    void ChangeText(string text)
+    public void ChangeText(string newText)
     {
         if (debugText != null)
         {
-            return;
+            debugText.text = newText;
         }
-        debugText.text = text;
+    }
+    public void ChangeText()
+    {
+
+        ChangeText(combinedCost.ToString());
     }
 
     public void CreateText(TextMeshPro textCube,string text, Color textColor)
@@ -103,24 +107,22 @@ public class Node: IComparable<Node>
         debugText = textMeshPro;
 
     }
-    public void ResetNode()
-    {
-        fromStartDistance = int.MaxValue;
-        CalculateCombinedDistance();
-        cameFromNode = null;
-
-        debugText = null;
-        
-    }
+    // public void ResetNode()
+    // {
+    //     fromStartCost = int.MaxValue;
+    //     CalculateCombinedCost();
+    //     debugText = null;
+    //     
+    // }
 
 
     public int CompareTo(Node otherNode)
     {
-        if (combinedDistance < otherNode.combinedDistance)
+        if (combinedCost > otherNode.combinedCost)
         {
             return 1;
         }
-        if (combinedDistance > otherNode.combinedDistance)
+        if (combinedCost < otherNode.combinedCost)
         {
             return -1;
         }

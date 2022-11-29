@@ -9,17 +9,21 @@ public class Pathfinding : MonoBehaviour
 {
     const int MOVE_DIAGONAL_COST = 14;
     const int MOVE_STRAIGHT_COST = 10;
+    
+    
     [SerializeField] float textFontSize = 10;
     [SerializeField] float timeSeconds = 0.5f;
     [SerializeField] float initialPause = 5f;
     [SerializeField] float generalWait = 2;
     CustomGrid<Node> nodeGrid => generator.NodeGrid;
     GridGenerator generator;
-    PriorityQueue<Node> openList;
-    Dictionary<Node, int> closedList;
-    // PriorityQueue<Node> closedList;
-    // List<Node> openList;
-    // List<Node> closedList;
+    [SerializeField]PriorityQueue<Node> openList;
+    Dictionary<Node, int> costFromStart;
+
+    Dictionary<Node, Node> cameFromNode;
+
+
+
 
     void FindGrid()
     {
@@ -30,6 +34,12 @@ public class Pathfinding : MonoBehaviour
     IEnumerator Wait(float time)
     {
         yield return new WaitForSeconds(time);
+    }
+
+    
+    public IEnumerator FindPath(Node startNode, Node endNode)
+    {
+        yield return FindPath(startNode.Coordinates, endNode.Coordinates);
     }
     public IEnumerator FindPath(Coordinates startCoords, Coordinates endCoords)
     {
@@ -43,13 +53,17 @@ public class Pathfinding : MonoBehaviour
             yield break;
         }
 
+        
+        //Why can't I pass Nodes themeselves????
+        
+        
+        
         Node startNode = nodeGrid.GetGridType(startCoords);
         generator.SetSpriteColor(startNode, Color.green);
         Node endNode = nodeGrid.GetGridType(endCoords);
         generator.SetSpriteColor(endNode, Color.blue);
 
 
-        yield return Wait(initialPause);
         if (startNode == null || endNode == null)
         {
             Debug.Log("INVALID PATH");
@@ -59,37 +73,43 @@ public class Pathfinding : MonoBehaviour
         
         foreach (var node in nodeGrid.GridArray)
         {
-            node.ResetNode();
-            
-            TextMeshPro textMeshPro = Resources.Load<TextMeshPro>("TextCube");
+            if (node.debugText == null)
+            {
+                TextMeshPro textMeshPro = Resources.Load<TextMeshPro>("TextCube");
 
-            textMeshPro = Instantiate(textMeshPro, nodeGrid.GetWorldPosFromCoords(node.Coordinates),Quaternion.identity,this.transform);
-            node.CreateText(textMeshPro,node.combinedDistance.ToString(), Color.black);
-            // node.CreateText(node.combinedDistance.ToString(), Color.black,8,nodeGrid.GetWorldPosFromCoords(node.Coordinates),this.transform);
+                textMeshPro = Instantiate(textMeshPro, nodeGrid.GetWorldPosFromCoords(node.Coordinates),Quaternion.identity,this.transform);
+                node.CreateText(textMeshPro,"---", Color.black);
+            }
+            else
+            {
+                node.ChangeText("---");
+            }
         }
         openList = new PriorityQueue<Node>(nodeGrid.GridArray.Length);
-        openList.Insert(startNode);
-        // closedList = new PriorityQueue<Node>(nodeGrid.GridArray.Length);
-        closedList = new Dictionary<Node, int>();
+        openList.Enqueue(startNode);
+        costFromStart = new Dictionary<Node, int>();
+        cameFromNode = new Dictionary<Node, Node>();
 
-
+        
         yield return Wait(generalWait);
 
 
-        startNode.AssignMangattanDistance(CalculateManhattanCost(startNode, endNode));
-        startNode.fromStartDistance = 0;
-        startNode.CalculateCombinedDistance();
-        closedList.Add(startNode,0);
+        startNode.AssignCosts(0,CalculateManhattanCost(startNode, endNode));
+        // startNode.AssignMangattanCost(CalculateManhattanCost(startNode, endNode));
+        // startNode.fromStartCost = 0;
+        // startNode.CalculateCombinedCost();
+        cameFromNode.Add(startNode,null);
+        costFromStart.Add(startNode,0);
         while (!openList.IsEmpty())
         {
 
-            // Node currentNode = GetLowestCombinedCostNode(openList);
             Node currentNode = openList.ExtractMin();
-            generator.SetSpriteColor(currentNode, Color.red);
+
+            generator.SetTempSpriteColor(currentNode, Color.red);
             yield return Wait(generalWait);
 
             
-            if (currentNode == endNode)
+            if (currentNode == endNode) // look into .Equals()
             {
                 //Found path
                 Debug.LogWarning("FOUND PATH");
@@ -98,20 +118,18 @@ public class Pathfinding : MonoBehaviour
             }
   
 
-            // closedList.Insert(currentNode);
             foreach (Node neighbourNode in GetNeighbourList(currentNode))
             {
-                // int newCost = closedList[currentNode] + CalculateManhattanCost(currentNode, neighbourNode);
-                // if (closedList.Contains(neighbourNode))
-                // {
-                //     continue;
-                // }
+ 
                 if (!neighbourNode.IsWalkable)
                 {
                     if (generator.GetSpriteColor(neighbourNode) == Color.gray)
                     {
                         print("COLORING OVER");
+                        generator.SetTempSpriteColor(neighbourNode,Color.white);
+                        yield return Wait(generalWait);
                     }
+                    neighbourNode.ChangeText("X");
                     generator.SetSpriteColor(neighbourNode, Color.gray);
 
                     continue;
@@ -120,69 +138,180 @@ public class Pathfinding : MonoBehaviour
 
                 generator.SetSpriteColor(neighbourNode, Color.yellow);
 
-                int newCost = closedList[currentNode] + CalculateManhattanCost(currentNode, neighbourNode);
+                int newFromStartCost = costFromStart[currentNode] + CalculateManhattanCost(currentNode, neighbourNode);
 
-                print( "New Cost : " + newCost);
-                // int priorityCost = currentNode.fromStartDistance + CalculateManhattanCost(currentNode, neighbourNode);
+                //print( "New Cost : " + newCost);
 
-                bool closedListContainsNode = closedList.ContainsKey(neighbourNode);
-                print($"closed list contains NOT neighbour Node : {!closedListContainsNode}");
-                print($"newCost< neighbourNode.fromStartDistance : {newCost< neighbourNode.fromStartDistance}");
+                bool closedListContainsNode = costFromStart.ContainsKey(neighbourNode);
+ 
                 yield return Wait(generalWait);
-                if (!closedListContainsNode || newCost< neighbourNode.fromStartDistance)
+                
+                if (!closedListContainsNode || newFromStartCost< costFromStart[neighbourNode])
                 {
-                    print( "Got through");
-                    if (closedListContainsNode)
-                    {
-                        closedList[neighbourNode] = newCost;
-                    }
-                    else
-                    {
-                        closedList.Add(neighbourNode,newCost);
-                    }
+                    
 
-                    neighbourNode.fromStartDistance = newCost;
-                    neighbourNode.AssignCameFromNode(currentNode);
-                    neighbourNode.AssignMangattanDistance(CalculateManhattanCost(neighbourNode,endNode));
-                    neighbourNode.CalculateCombinedDistance();
+                    costFromStart[neighbourNode] = newFromStartCost;
+                    neighbourNode.AssignCosts(newFromStartCost,CalculateManhattanCost(neighbourNode,endNode));
+                    // neighbourNode.fromStartCost = newFromStartCost;
+                    // neighbourNode.AssignMangattanCost(CalculateManhattanCost(neighbourNode,endNode));
+                    // neighbourNode.CalculateCombinedCost();
+                    cameFromNode[neighbourNode] = currentNode;
 
-                    openList.Insert(neighbourNode);
+                    openList.Enqueue(neighbourNode);
                     
                 }
-                yield return Wait(generalWait);
 
-                // if (priorityCost<neighbourNode.fromStartDistance)
-                // {
-                //     neighbourNode.AssignCameFromNode(currentNode);
-                //     neighbourNode.fromStartDistance = priorityCost;
-                //     neighbourNode.AssignMangattanDistance(CalculateManhattanCost(neighbourNode,endNode));
-                //     neighbourNode.CalculateCombinedDistance();
-                //     if (!openList.Contains(neighbourNode))
-                //     {
-                //         openList.Add(neighbourNode);
-                //     }
-                // }
-                
             }
+            yield return Wait(generalWait);
+            generator.RestoreColor(currentNode);
 
         }
 
         Debug.Log("No Path found");
         yield break;
-    }
-
-    List<Node> CalculatePath(Node endNode)
+    }    
+    public List<Node> FindPathTest(Coordinates startCoords, Coordinates endCoords)
     {
-        List<Node> path = new List<Node>();
-        path.Add(endNode);
-        Node currentNode = endNode;
-        while (currentNode.CameFromNode != null)
+        
+        if (generator == null)
         {
-            path.Add(currentNode.CameFromNode);
-            currentNode = currentNode.CameFromNode;
+            FindGrid();
+        }
+        if (generator == null)
+        {
+            return null;
+        }
+
+        
+        //Why can't I pass Nodes themeselves????
+        
+        
+        
+        Node startNode = nodeGrid.GetGridType(startCoords);
+        generator.SetSpriteColor(startNode, Color.green);
+        Node endNode = nodeGrid.GetGridType(endCoords);
+        generator.SetSpriteColor(endNode, Color.blue);
+
+
+        if (startNode == null || endNode == null)
+        {
+            Debug.Log("INVALID PATH");
+            return null;
+        }
+
+        
+        foreach (var node in nodeGrid.GridArray)
+        {
+            if (node.debugText == null)
+            {
+                TextMeshPro textMeshPro = Resources.Load<TextMeshPro>("TextCube");
+
+                textMeshPro = Instantiate(textMeshPro, nodeGrid.GetWorldPosFromCoords(node.Coordinates),Quaternion.identity,this.transform);
+                node.CreateText(textMeshPro,"---", Color.black);
+            }
+            else
+            {
+                node.ChangeText("---");
+            }
+        }
+        openList = new PriorityQueue<Node>(nodeGrid.GridArray.Length);
+        openList.Enqueue(startNode);
+        costFromStart = new Dictionary<Node, int>();
+        cameFromNode = new Dictionary<Node, Node>();
+
+        
+
+
+        startNode.AssignCosts(0,CalculateManhattanCost(startNode, endNode));
+        // startNode.AssignMangattanCost(CalculateManhattanCost(startNode, endNode));
+        // startNode.fromStartCost = 0;
+        // startNode.CalculateCombinedCost();
+        cameFromNode.Add(startNode,null);
+        costFromStart.Add(startNode,0);
+        while (!openList.IsEmpty())
+        {
+
+            Node currentNode = openList.ExtractMin();
+
+            generator.SetTempSpriteColor(currentNode, Color.red);
+
+            
+            if (currentNode == endNode) // look into .Equals()
+            {
+                //Found path
+                Debug.LogWarning("FOUND PATH");
+                return CalculatePath(endNode);
+
+            }
+  
+
+            foreach (Node neighbourNode in GetNeighbourList(currentNode))
+            {
+ 
+                if (!neighbourNode.IsWalkable)
+                {
+                    if (generator.GetSpriteColor(neighbourNode) == Color.gray)
+                    {
+                        print("COLORING OVER");
+                        generator.SetTempSpriteColor(neighbourNode,Color.white);
+                    }
+                    neighbourNode.ChangeText("X");
+                    generator.SetSpriteColor(neighbourNode, Color.gray);
+
+                    continue;
+                }
+                
+
+                generator.SetSpriteColor(neighbourNode, Color.yellow);
+
+                int newFromStartCost = costFromStart[currentNode] + CalculateManhattanCost(currentNode, neighbourNode);
+
+                //print( "New Cost : " + newCost);
+
+                bool closedListContainsNode = costFromStart.ContainsKey(neighbourNode);
+ 
+                
+                if (!closedListContainsNode || newFromStartCost< costFromStart[neighbourNode])
+                {
+                    
+
+                    costFromStart[neighbourNode] = newFromStartCost;
+                    neighbourNode.AssignCosts(newFromStartCost,CalculateManhattanCost(neighbourNode,endNode));
+                    // neighbourNode.fromStartCost = newFromStartCost;
+                    // neighbourNode.AssignMangattanCost(CalculateManhattanCost(neighbourNode,endNode));
+                    // neighbourNode.CalculateCombinedCost();
+                    cameFromNode[neighbourNode] = currentNode;
+
+                    openList.Enqueue(neighbourNode);
+                    
+                }
+
+            }
+            generator.RestoreColor(currentNode);
 
         }
+
+        Debug.Log("No Path found");
+        return null;
+    }
+    List<Node> CalculatePath(Node endNode)
+    {
+        if (cameFromNode == null)
+        {
+            Debug.LogError("Dictionary of the path is null");
+            return null;
+        }
+        
+        List<Node> path = new List<Node>();
+        path.Add(cameFromNode[endNode]);
+        Node currentNode = endNode;
+        while (cameFromNode[currentNode] != null)
+        {
+            path.Add(cameFromNode[currentNode]);
+            currentNode = cameFromNode[currentNode];
+        }
         path.Reverse();
+
         return path;
 
     }
@@ -247,18 +376,7 @@ public class Pathfinding : MonoBehaviour
         int remaining = Mathf.Abs(xDistance - yDistance);
         return MOVE_DIAGONAL_COST * Mathf.Min(xDistance,yDistance) + remaining * MOVE_STRAIGHT_COST;
     }
-    Node GetLowestCombinedCostNode(List<Node> nodeList)
-    {
-        Node lowestCombinedCostNode = nodeList[0];
-        for (int i = 1; i < nodeList.Count; i++)
-        {
-            if (nodeList[i].combinedDistance < lowestCombinedCostNode.combinedDistance)
-            {
-                lowestCombinedCostNode = nodeList[i];
-            }
-        }
-        return lowestCombinedCostNode;
-    }
+
 
     // void CreateText(Node node, int cost)
     // {
@@ -270,8 +388,8 @@ public class Pathfinding : MonoBehaviour
     //     posRight.x += nodeGrid.CellSize.x /2;
     //
     //     
-    //     node.CreateText(node.fromStartDistance.ToString(),Color.cyan, textFontSize,posleft, this.transform);
-    //     node.CreateText(node.combinedDistance.ToString(),Color.cyan, textFontSize,pos, this.transform);
+    //     node.CreateText(node.fromStartCost.ToString(),Color.cyan, textFontSize,posleft, this.transform);
+    //     node.CreateText(node.combinedCost.ToString(),Color.cyan, textFontSize,pos, this.transform);
     //     node.CreateText(node.ManhattanDistance.ToString(),Color.cyan, textFontSize,posRight, this.transform);
     // }
 
