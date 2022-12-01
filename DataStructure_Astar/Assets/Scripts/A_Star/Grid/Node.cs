@@ -7,23 +7,32 @@ using TMPro;
 public class Node: IComparable<Node>
 {
 
-    [SerializeField]Coordinates coordinates;
+    [SerializeField] Coordinates coordinates;
     [SerializeField] int estimateCost; // mangattan Distance
-    int combinedCost;
-    int fromStartCost;
-    public TextMeshPro debugText;
-    public Color currentColor;
-    public Color tempColor;
+    [SerializeField] int fromStartCost;
+    [SerializeField] int combinedCost;
+    
+    [SerializeField] TileType tileType;
+    [SerializeField] TileType previousTileType;
+    
+    [SerializeField]TextMeshPro debugText;
+    Color currentColor;
 
-    [SerializeField]TileType tileType;
-    [SerializeField]TileType previousTileType;
 
     public event Action<Node> OnTileTypeChanged;
 
+    #region Properties
+
+    
+
     public int WalkingCost => tileType.WalkingCost;
-    public Color TileColor => tileType.TypeColor;
-    public Coordinates Coordinates => coordinates;
     public bool IsWalkable => tileType.IsWalkable;
+    public Color TileColor => tileType.TypeColor;
+    public Color CurrentColor => currentColor;
+    public Coordinates Coordinates => coordinates;
+    public TextMeshPro DebugText => debugText;
+    #endregion
+
 
     public Node(Coordinates coordinates, TileType tileType)
     {
@@ -53,9 +62,21 @@ public class Node: IComparable<Node>
         fromStartCost = newFromStartCost;
         estimateCost = newEstimateCost;
         combinedCost = fromStartCost + estimateCost;
-        ChangeText();
+
+        string newText = $"S:{fromStartCost} H:{estimateCost} F:{combinedCost}";
+        ChangeText(newText);
     }
 
+
+    #region Debug Texts
+    
+    public void AssignDebugText(TextMeshPro textCube,string text, Color textColor)
+    {
+        textCube.text = text;
+        textCube.color = textColor;
+        debugText = textCube;
+        
+    }
     public void ChangeText(string newText)
     {
         if (debugText != null)
@@ -63,48 +84,14 @@ public class Node: IComparable<Node>
             debugText.text = newText;
         }
     }
-    public void ChangeText()
+
+    #endregion
+
+    public void SetCurrentColor(Color newCurrentColor)
     {
-        ChangeText(combinedCost.ToString());
+        currentColor = newCurrentColor;
     }
 
-    public void CreateText(TextMeshPro textCube,string text, Color textColor)
-    {
-        textCube.text = text;
-        textCube.color = textColor;
-        debugText = textCube;
-
-        
-        
-    }
-    public void CreateText(string text, Color textColor, float textFontSize,Vector3 position,Transform parent)
-    {
-
-        if (debugText != null)
-        {
-            return;
-        }
-        
-
-        GameObject newText = new GameObject($"{coordinates.x};{coordinates.y}", typeof(TextMeshPro));
-        newText.transform.position = position;
-        TextMeshPro textMeshPro = newText.GetComponent<TextMeshPro>();
-        textMeshPro.rectTransform.sizeDelta = new Vector2(10, 10);
-
-        
-        textMeshPro.text = text;
-        textMeshPro.alignment = TextAlignmentOptions.Center;
-        textMeshPro.color = textColor;
-        textMeshPro.fontSize = textFontSize;
-        if (parent != null)
-        {
-        
-            textMeshPro.transform.SetParent(parent);
-        }
-        
-        debugText = textMeshPro;
-
-    }
     public int CompareTo(Node otherNode)
     {
         if (combinedCost > otherNode.combinedCost)

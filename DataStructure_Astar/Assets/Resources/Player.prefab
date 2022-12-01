@@ -47,12 +47,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerColor: {r: 0, g: 1, b: 0, a: 1}
   playerRadius: 2
-  currentGrid:
-    width: 0
-    height: 0
-    cellSize: {x: 0, y: 0}
-    originPosition: {x: 0, y: 0, z: 0}
-    storedGridArrayElements: []
+  playerStepTime: 0.5
+  colorTime: 2
+  foundPathColor: {r: 0, g: 1, b: 1, a: 1}
+  currentNode:
+    coordinates:
+      x: 0
+      y: 0
+    estimateCost: 0
+    fromStartCost: 0
+    combinedCost: 0
+    tileType: {fileID: 0}
+    previousTileType: {fileID: 0}
+  generator: {fileID: 0}
   pathfinding: {fileID: 0}
 --- !u!1 &3246143955740451336
 GameObject:

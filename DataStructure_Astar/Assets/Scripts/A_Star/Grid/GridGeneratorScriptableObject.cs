@@ -8,6 +8,7 @@ using UnityEditor;
 public class GridGeneratorScriptableObject : ScriptableObject
 {
     [SerializeField] GridGenerator gridGeneratorPrefab;
+    
     [Header("Mouse Pointer")]
     [SerializeField] float pointerRadius = 3;
     [SerializeField] Color pointerColor = Color.cyan;
@@ -25,6 +26,7 @@ public class GridGeneratorScriptableObject : ScriptableObject
         Handles.color = pointerColor;
 
         Handles.DrawWireDisc(mousePosition,normal, pointerRadius,pointerThickness);
+        
         Vector3 leftPoint = mousePosition;
         leftPoint.x -= pointerRadius;
         Vector3 rightPoint = mousePosition;

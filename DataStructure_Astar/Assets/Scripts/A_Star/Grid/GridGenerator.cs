@@ -12,23 +12,22 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     [SerializeField] Square1x1 square1x1;
     [SerializeField] CustomGrid<Node> nodeGrid;
 
-    
     [SerializeField] Transform parentForTexts;
     [SerializeField] Transform parentForSprites;
-    Square1x1[,] spriteArray;
-
     
+    [SerializeField,HideInInspector] TileType defaultTileType;
+    
+    
+    Square1x1[,] spriteArray;
     TextMeshPro[,] debugTexts;
 
-    [SerializeField,HideInInspector] TileType defaultTileType;
     public CustomGrid<Node> NodeGrid => nodeGrid;
 
     
     #region Serialize stuff
     
     [SerializeField, HideInInspector] List<DataToSerialise<Square1x1>> storedGridArrayElements;
-    
-    
+
     public void OnBeforeSerialize()
     {
         if (nodeGrid == null) return;
@@ -42,12 +41,8 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
                 storedGridArrayElements.Add(new DataToSerialise<Square1x1>(x, y, spriteArray[x, y]));
             }
         }
-        
-   
 
     }
-    
-    
     public void OnAfterDeserialize()
     {
         if (nodeGrid == null) return;
@@ -66,25 +61,6 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     {
         DestroyItselfIfGeneratorExists();
     }
-
-    void OnEnable()
-    {
-        if (nodeGrid == null)
-        {
-            return;
-        }
-
-        if (defaultTileType == null)
-        {
-            defaultTileType = Resources.Load<TileType>("Tiles/Road");
-        }
-        foreach (var node in nodeGrid.GridArray)
-        {
-            SetTileColor(node);
-            node.OnTileTypeChanged += SetTileColor;
-        }
-    }
-
     
     void DestroyItselfIfGeneratorExists()
     {
@@ -96,6 +72,26 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         }
     }
 
+
+    void OnEnable()
+    {
+        SetupTileTypeForNodes();
+    }
+
+    void SetupTileTypeForNodes()
+    {
+        if (nodeGrid == null)
+        {
+            return;
+        }
+
+        if (defaultTileType == null)
+        {
+            defaultTileType = Resources.Load<TileType>("Tiles/Road");
+        }
+
+        SubscribeToTileChange();
+    }
 
 
     void OnDestroy()
@@ -111,7 +107,6 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         nodeGrid = new CustomGrid<Node>(width, height, cellSize,transform.position, (coords) => new Node(coords, defaultTileType));
         
         CreateSquares();
-
         SubscribeToTileChange();
     }
 
@@ -142,43 +137,47 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         SceneVisibilityManager.instance.DisablePicking(parentForSprites.gameObject, true);
     }
 
+    #region Changing colors for debugging purposes
+
     public void SetTempSpriteColor(Node node, Color newTempColor,bool setChildSprite = true)
     {
-        node.tempColor = newTempColor;
-        SpriteRenderer spriteRenderer = DetermineSpriteRenderer(node,setChildSprite);
-        spriteRenderer.color = newTempColor;
+        GetSpriteRendererByNode(node,setChildSprite).color = newTempColor;
     }
-
+    public void RestoreColor(Node node, bool childSprite = true)
+    {
+        GetSpriteRendererByNode(node,childSprite).color = node.CurrentColor;
+    }
     public void SetSpriteColor(Node node, Color newColor, bool setChildSprite = true)
     {
-        SpriteRenderer spriteRenderer = DetermineSpriteRenderer(node,setChildSprite);
-        node.currentColor = newColor;
-        spriteRenderer.color = newColor;
-    
+        node.SetCurrentColor(newColor);
+        GetSpriteRendererByNode(node,setChildSprite).color = newColor;
     }
 
-    SpriteRenderer DetermineSpriteRenderer(Node node, bool chooseChild)
+    SpriteRenderer GetSpriteRendererByNode(Node node, bool chooseChild)
     {
         Square1x1 square = spriteArray[node.Coordinates.x, node.Coordinates.y];
         return chooseChild ? square.ChildSprite : square.ThisSprite;
     }
-    public void RestoreColor(Node node, bool childSprite = true)
-    {
-        SpriteRenderer spriteRenderer = DetermineSpriteRenderer(node,childSprite);
 
-        spriteRenderer.color = node.currentColor;
-    }
     public Color GetSpriteColor(Node node, bool childSprite = true)
     {
-        SpriteRenderer spriteRenderer = DetermineSpriteRenderer(node,childSprite);
-
-        return spriteRenderer.color;
+        return GetSpriteRendererByNode(node,childSprite).color;
     }
 
     void SetTileColor(Node node)
     {
         SetSpriteColor(node,node.TileColor,false);
     }
+
+    public void ResetSpriteColors()
+    {
+        foreach (var sprite in spriteArray)
+        {
+            sprite.ChildSprite.color = sprite.DefaultChildColor;
+        }
+    }
+    #endregion
+
     
 
     void DeleteSprites()
@@ -218,7 +217,8 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     {
         int width = nodeGrid.Width;
         int height = nodeGrid.Height;
-        Vector2 cellSize = nodeGrid.CellSize;
+        float cellSizeX = nodeGrid.CellSize.x;
+        float cellSizeY = nodeGrid.CellSize.y;
         Vector3 originPosition = transform.position;
         
         debugTexts = new TextMeshPro[width, height];
@@ -228,7 +228,7 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
             for (int y = 0; y < height; y++)
             {
                 string textName = $"{x};{y}";
-                Vector3 textPos = new Vector3(x * cellSize.x + cellSize.x * 0.5f, y * cellSize.y + cellSize.y * 0.5f) + originPosition;
+                Vector3 textPos = new Vector3(x * cellSizeX + cellSizeX *0.5f, y * cellSizeY + cellSizeY *0.5f) + originPosition;
                 TextMeshPro textObject = Visualisation.CreateText(textName, textName, textPos, textColor, textFontSize, parentForTexts);
                 debugTexts[x, y] = textObject;
             }
