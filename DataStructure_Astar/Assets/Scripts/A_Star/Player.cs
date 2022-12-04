@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
     
     
     [SerializeField] Coordinates currentCoordinates;
-    [SerializeField,HideInInspector] GridGenerator generator;
+    [SerializeField] GridGenerator generator;
 
     [SerializeField] Pathfinding pathfinding;
     CustomGrid<Node> currentGrid => generator.NodeGrid;
@@ -60,7 +60,6 @@ public class Player : MonoBehaviour
         }
 
         currentCoordinates = startingNode.Coordinates;
-        //currentNode = startingNode;
         this.generator = generator;
     }
 
@@ -95,12 +94,9 @@ public class Player : MonoBehaviour
         }
         foreach (var node in listOfNodes)
         {
-            //generator.SetSpriteColor(node,Color.cyan);
             currentCoordinates = node.Coordinates;
-            this.transform.position = currentGrid.GetWorldPosFromCoords(currentNode.Coordinates);
+            this.transform.position = currentGrid.GetWorldPosFromCoords(currentCoordinates);
             yield return new WaitForSeconds(playerStepTime);
-        
-            
         }
 
         findingPath = null;
@@ -141,7 +137,6 @@ public class Player : MonoBehaviour
         
         Vector3 playerPos = currentGrid.GetWorldPosFromCoords(currentNode.Coordinates);
 
-        transform.position = playerPos;
         Gizmos.color = playerColor;
         Gizmos.DrawSphere(playerPos, playerRadius);
     }

@@ -8,7 +8,6 @@ using TMPro;
 [ExecuteAlways]
 public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
 {
-    
     [SerializeField] Square1x1 square1x1;
     [SerializeField] CustomGrid<Node> nodeGrid;
 
@@ -64,9 +63,9 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     
     void DestroyItselfIfGeneratorExists()
     {
-        GridGenerator[] gridGenerators = FindObjectsOfType<GridGenerator>();
-
-        if (gridGenerators.Length > 1)
+        GridGenerator gridGenerator = FindObjectOfType<GridGenerator>();
+        
+        if (gridGenerator !=this)
         {
             DestroyImmediate(this.gameObject);
         }
@@ -85,6 +84,7 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
             return;
         }
 
+        //grid generator shouldn't be finding it itself
         if (defaultTileType == null)
         {
             defaultTileType = Resources.Load<TileType>("Tiles/Road");
@@ -166,7 +166,7 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
 
     void SetTileColor(Node node)
     {
-        SetSpriteColor(node,node.TileColor,false);
+        SetSpriteColor(node, node.TileColor, false);
     }
 
     public void ResetSpriteColors()
@@ -217,9 +217,6 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     {
         int width = nodeGrid.Width;
         int height = nodeGrid.Height;
-        float cellSizeX = nodeGrid.CellSize.x;
-        float cellSizeY = nodeGrid.CellSize.y;
-        Vector3 originPosition = transform.position;
         
         debugTexts = new TextMeshPro[width, height];
 
@@ -227,17 +224,24 @@ public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
         {
             for (int y = 0; y < height; y++)
             {
-                string textName = $"{x};{y}";
-                Vector3 textPos = new Vector3(x * cellSizeX + cellSizeX *0.5f, y * cellSizeY + cellSizeY *0.5f) + originPosition;
-                TextMeshPro textObject = Visualisation.CreateText(textName, textName, textPos, textColor, textFontSize, parentForTexts);
-                debugTexts[x, y] = textObject;
+                CreateNewTextObject(textColor, textFontSize, x, y);
             }
         }
         if (parentForTexts != null)
         {
             SceneVisibilityManager.instance.DisablePicking(parentForTexts.gameObject, true);
         }
-
     }
-    
+
+    void CreateNewTextObject(Color textColor, float textFontSize, int x, int y)
+    {
+        float cellSizeX = nodeGrid.CellSize.x;
+        float cellSizeY = nodeGrid.CellSize.y;
+        Vector3 originPosition = transform.position;
+
+        string textName = $"{x};{y}";
+        Vector3 textPos = new Vector3(x * cellSizeX + cellSizeX * 0.5f, y * cellSizeY + cellSizeY * 0.5f) + originPosition;
+        TextMeshPro textObject = Visualisation.CreateText(textName, textName, textPos, textColor, textFontSize, parentForTexts);
+        debugTexts[x, y] = textObject;
+    }
 }

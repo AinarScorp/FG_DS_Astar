@@ -7,24 +7,23 @@ using TMPro;
 public class Node: IComparable<Node>
 {
 
-    [SerializeField] Coordinates coordinates;
-    [SerializeField] int estimateCost; // mangattan Distance
+    [SerializeField] int estimateCost = 0; // mangattan Distance
     [SerializeField] int fromStartCost;
     [SerializeField] int combinedCost;
+    [SerializeField] Coordinates coordinates;
+    
     
     [SerializeField] TileType tileType;
     [SerializeField] TileType previousTileType;
     
     [SerializeField]TextMeshPro debugText;
+    
     Color currentColor;
-
+    
 
     public event Action<Node> OnTileTypeChanged;
 
     #region Properties
-
-    
-
     public int WalkingCost => tileType.WalkingCost;
     public bool IsWalkable => tileType.IsWalkable;
     public Color TileColor => tileType.TypeColor;
@@ -39,7 +38,6 @@ public class Node: IComparable<Node>
         this.tileType = tileType;
         previousTileType = tileType;
         this.coordinates = coordinates;
-        estimateCost = 0;
     }
 
     public void AssignTileType(TileType newTileType)

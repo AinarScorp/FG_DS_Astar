@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [CreateAssetMenu(fileName = "Tile Type", menuName = "ScriptableObjects/Tile Type", order = 2)]
-public class TileType : ScriptableObject
+public class TileType : ScriptableObject //think about the name/rename
 {
     [SerializeField] Color typeColor = Color.white;
     [SerializeField] bool isWalkable = true;

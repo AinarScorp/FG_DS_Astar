@@ -27,13 +27,8 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
     public Vector2 CellSize => cellSize;
 
     #region Serialize stuff
-
-
-
+    
     [SerializeField] List<DataToSerialise<TGridType>> storedGridArrayElements;
-    
-
-    
     
     public void OnBeforeSerialize()
     {
@@ -124,7 +119,6 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
 
     public Vector3 GetWorldPosFromCoords(int x, int y, bool centered = true)
     {
-        
         float centerOffset = centered ? 0.5f : 0;
         float xPos = x * cellSize.x + cellSize.x * centerOffset;
         float yPos = y * cellSize.y +cellSize.y * centerOffset;

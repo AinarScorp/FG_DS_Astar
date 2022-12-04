@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Algorithms;
@@ -9,12 +10,13 @@ public class Pathfinding : MonoBehaviour
 {
     const int MOVE_DIAGONAL_COST = 14;
     const int MOVE_STRAIGHT_COST = 10;
+    
+    //put in another class/scriptiple object
     const string DEFAULT_TEXT = "---";
     
     [SerializeField] Color currentTileColor = Color.red;
     [SerializeField] Color wallTileColor = Color.grey;
     [SerializeField] Color neighbourTileColor = Color.yellow;
-    [SerializeField] Color checkColor = Color.white;
     
     
     [SerializeField] float generalWaitTime = 2;
@@ -25,31 +27,26 @@ public class Pathfinding : MonoBehaviour
     Dictionary<Node, int> costFromStart;
     Dictionary<Node, Node> cameFromNode;
 
+
     GridGenerator generator;
     
     CustomGrid<Node> nodeGrid => generator.NodeGrid;
 
 
-
-    void FindGrid()
+    void Awake()
     {
         generator = FindObjectOfType<GridGenerator>();
+        
     }
-
-
+    
     IEnumerator Wait(float time)
     {
         yield return new WaitForSeconds(time);
     }
 
-    
 
     public IEnumerator FindPath(Node startNode, Node endNode)
     {
-        if (generator == null)
-        {
-            FindGrid();
-        }
         if (generator == null)
         {
             yield break;
@@ -75,14 +72,13 @@ public class Pathfinding : MonoBehaviour
         cameFromNode.Add(startNode,null);
         costFromStart.Add(startNode,0);
         
-        
         while (!openList.IsEmpty())
         {
             Node currentNode = openList.ExtractMin();
 
+            print("Stopped");
             generator.SetTempSpriteColor(currentNode, currentTileColor);
             yield return Wait(generalWaitTime);
-
             
             if (currentNode == endNode) // look into .Equals()
             {
@@ -90,21 +86,14 @@ public class Pathfinding : MonoBehaviour
                 yield return CalculatePath(endNode);
                 yield break;
             }
-  
 
             foreach (Node neighbourNode in GetNeighbourList(currentNode))
             {
  
                 if (!neighbourNode.IsWalkable)
                 {
-                    if (generator.GetSpriteColor(neighbourNode) == wallTileColor) // this is for testings, if I can manage avoid checking same tiles
-                    {
-                        generator.SetTempSpriteColor(neighbourNode,checkColor);
-                        yield return Wait(generalWaitTime);
-                    }
                     neighbourNode.ChangeText("X");
                     generator.SetSpriteColor(neighbourNode, wallTileColor);
-
                     continue;
                 }
                 
@@ -172,8 +161,10 @@ public class Pathfinding : MonoBehaviour
         path.Reverse();
 
         return path;
-
     }
+    
+    //Move it to the grid class
+    //think about nested loops
     List<Node> GetNeighbourList(Node currentNode)
     {
         List<Node> neighbourList = new List<Node>();
@@ -195,13 +186,11 @@ public class Pathfinding : MonoBehaviour
             if (thereIsLeftNode)
             {
                 neighbourList.Add(nodeGrid.GetGridType(currentNodeCoords.x-1,currentNodeCoords.y+1));
-
             }
             
         }
         if (thereIsBottomNode)
         {
-
             neighbourList.Add(nodeGrid.GetGridType(currentNodeCoords.x,currentNodeCoords.y-1));
             if (thereIsRightNode)
             {
@@ -211,12 +200,10 @@ public class Pathfinding : MonoBehaviour
             if (thereIsLeftNode)
             {
                 neighbourList.Add(nodeGrid.GetGridType(currentNodeCoords.x-1,currentNodeCoords.y-1));
-
             }
         }
         if (thereIsRightNode)
         {
-
             neighbourList.Add(nodeGrid.GetGridType(currentNodeCoords.x+1,currentNodeCoords.y));
         }
         if (thereIsLeftNode)

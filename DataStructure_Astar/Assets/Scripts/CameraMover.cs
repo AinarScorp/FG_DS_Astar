@@ -8,13 +8,10 @@ public class CameraMover : MonoBehaviour
 {
     [SerializeField] float startingSpeed = 2.0f;
     [SerializeField] float speedIncrease = 1;
-    [SerializeField] float sizeChangeSpeedIncrease = 1;
     [SerializeField] Camera thisCamera;
     float currentSpeed;
     [SerializeField] float cameraSizeChangeSpeed = 2;
-    float defaultCameraSizeChangeSpeed;
 
-    bool changingCameraSize = false;
     void Awake()
     {
         thisCamera = GetComponent<Camera>();
@@ -24,7 +21,6 @@ public class CameraMover : MonoBehaviour
     void Start()
     {
         currentSpeed = startingSpeed;
-        defaultCameraSizeChangeSpeed = cameraSizeChangeSpeed;
     }
 
     void Update()
@@ -67,7 +63,6 @@ public class CameraMover : MonoBehaviour
         }
         else
         {
-            changingCameraSize = false;
             ChangeSpeed(scrollDelta);
             
         }
@@ -77,15 +72,6 @@ public class CameraMover : MonoBehaviour
     void ChangeCameraSize(float scrollDelta)
     {
         thisCamera.orthographicSize += -scrollDelta * cameraSizeChangeSpeed * Time.deltaTime;
-        changingCameraSize = true;
-        if (changingCameraSize)
-        {
-            cameraSizeChangeSpeed += Time.deltaTime * sizeChangeSpeedIncrease;
-        }
-        else
-        {
-            cameraSizeChangeSpeed = defaultCameraSizeChangeSpeed;
-        }
     }
 
     void ChangeSpeed(float scrollDelta)
