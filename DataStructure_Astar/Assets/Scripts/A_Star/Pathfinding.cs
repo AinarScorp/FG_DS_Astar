@@ -76,7 +76,6 @@ public class Pathfinding : MonoBehaviour
         {
             Node currentNode = openList.ExtractMin();
 
-            print("Stopped");
             generator.SetTempSpriteColor(currentNode, currentTileColor);
             yield return Wait(generalWaitTime);
             
