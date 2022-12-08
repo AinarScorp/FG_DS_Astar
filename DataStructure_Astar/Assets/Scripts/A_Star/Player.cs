@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
 public class Player : MonoBehaviour
 {
     //Player info
@@ -36,15 +35,18 @@ public class Player : MonoBehaviour
 
     void DestroyItselfIfPlayerExists()
     {
-        Player[] players = FindObjectsOfType<Player>();
-
-        if (players.Length > 1)
+        Player player = FindObjectOfType<Player>();
+        if (player != this)
         {
-            Debug.Log("ss");
             DestroyImmediate(this.gameObject);
         }
     }
     #endregion
+
+    void Start()
+    {
+        transform.position =currentGrid.GetWorldPosFromCoords(currentCoordinates);
+    }
 
     void Update()
     {
@@ -64,7 +66,7 @@ public class Player : MonoBehaviour
     }
 
 
-    public IEnumerator FindPath(Node endNode)
+    IEnumerator FindPath(Node endNode)
     {
         if (pathfinding ==null)
         {
