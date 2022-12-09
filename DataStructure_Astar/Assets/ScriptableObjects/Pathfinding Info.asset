@@ -20,5 +20,5 @@ MonoBehaviour:
   arrowThickness: 5
   arrowHeadLength: 4.8
   pointingArrowColor: {r: 1, g: 0.006289184, b: 0.006289184, a: 1}
-  dotRadius: 4.8
+  dotRadius: 0.5
   dotColor: {r: 1, g: 0, b: 0, a: 1}
