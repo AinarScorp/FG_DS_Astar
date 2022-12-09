@@ -7,53 +7,21 @@ using TMPro;
 
 
 [Serializable]
-public class CustomGrid<TGridType> : ISerializationCallbackReceiver
+public class CustomGrid<TGridType>
 {
     [SerializeField] int width, height;
     [SerializeField] Vector2 cellSize;
     [SerializeField] Vector3 originPosition;
-
-
-    TGridType[,] gridArray;
     
-
-
+    [SerializeField] TwoDimensionalArraySerializer<TGridType> TgridTypeSerializer;
+    TGridType[,] gridArray => TgridTypeSerializer.MultiArray;
+    
+    public int Width => width;
+    public int Height => height;
+    public Vector2 CellSize => cellSize;
     public TGridType[,] GridArray => gridArray;
 
-    public int Width => width;
 
-    public int Height => height;
-
-    public Vector2 CellSize => cellSize;
-
-    #region Serialize stuff
-    
-    [SerializeField] List<DataToSerialise<TGridType>> storedGridArrayElements;
-    
-    public void OnBeforeSerialize()
-    {
-        storedGridArrayElements = new List<DataToSerialise<TGridType>>();
-        
-        for (int x = 0; x < gridArray.GetLength(0); x++)
-        {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
-            {
-                storedGridArrayElements.Add(new DataToSerialise<TGridType>(x, y, gridArray[x, y]));
-            }
-        }
-    }
-    
-    
-    public void OnAfterDeserialize()
-    {
-        gridArray = new TGridType[width, height];
-
-        foreach(var package in storedGridArrayElements)
-        {
-            gridArray[package.Index0, package.Index1] = package.Element;
-        }
-    }
-    #endregion
 
     public CustomGrid(int width, int height, Vector2 cellSize, Vector3 originPosition, Func<Coordinates, TGridType> createGridType)
     {
@@ -62,7 +30,7 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
         this.cellSize = cellSize;
         this.originPosition = originPosition;
         
-        gridArray = new TGridType[width, height];
+        TGridType[,] gridArray = new TGridType[width, height];
 
         for (int x = 0; x < width; x++)
         {
@@ -71,37 +39,7 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
                 gridArray[x, y] = createGridType(new Coordinates(x, y));
             }
         }
-
-    }
-    public void VisualiseGrid(Color gridColor, float lineThickness)
-    {
-        Handles.color = gridColor;
-        for (int x = 0; x < width; x++)
-        {
-
-                Vector3 startLinePos = new Vector3(x * cellSize.x, 0) + originPosition;
-                Vector3 endLineUp = new Vector3(x * cellSize.x, height * cellSize.y) + originPosition;
-
-                Handles.DrawLine(startLinePos, endLineUp, lineThickness);
-        }
-
-        for (int y = 0; y < height; y++)
-        {
-            Vector3 startLinePos = new Vector3(0, y * cellSize.y) + originPosition;
-            Vector3 endLineRight = new Vector3(width * cellSize.x, y * cellSize.y) + originPosition;
-            Handles.DrawLine(startLinePos, endLineRight, lineThickness);
-
-        }
-        
-
-        Vector3 finishingLineCorner = new Vector3(width * cellSize.x, height * cellSize.y) + originPosition;
-        Vector3 finishingLineTop = new Vector3(0, height * cellSize.y) + originPosition;
-        Vector3 finishingLineRight = new Vector3(width * cellSize.x, 0) + originPosition;
-
-        Handles.DrawLine(finishingLineTop, finishingLineCorner, lineThickness);
-        Handles.DrawLine(finishingLineRight, finishingLineCorner, lineThickness);
-
-
+        TgridTypeSerializer = new TwoDimensionalArraySerializer<TGridType>(gridArray);
     }
 
     public void GetGridCoordsFromWorld(Vector3 worldPosition, out int x, out int y)
@@ -125,14 +63,10 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
         return new Vector3(xPos, yPos) + originPosition;
     }
 
-    
-
     public TGridType GetGridType(Coordinates coordinates)
     {
         return GetGridType(coordinates.x, coordinates.y);
     }
-    
-    
     
     public TGridType GetGridType(int x, int y)
     {
@@ -149,13 +83,39 @@ public class CustomGrid<TGridType> : ISerializationCallbackReceiver
         {
             return default;
         }
-        
         return gridArray[x, y] = setValue;
     }
 
     bool OutOfArray(int x, int y)
     {
         return x >= width || x < 0 || y >= height || y < 0;
+    }
+    public void VisualiseGrid(Color gridColor, float lineThickness)
+    {
+        Handles.color = gridColor;
+        for (int x = 0; x < width; x++)
+        {
+
+            Vector3 startLinePos = new Vector3(x * cellSize.x, 0) + originPosition;
+            Vector3 endLineUp = new Vector3(x * cellSize.x, height * cellSize.y) + originPosition;
+            Handles.DrawLine(startLinePos, endLineUp, lineThickness);
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            Vector3 startLinePos = new Vector3(0, y * cellSize.y) + originPosition;
+            Vector3 endLineRight = new Vector3(width * cellSize.x, y * cellSize.y) + originPosition;
+            Handles.DrawLine(startLinePos, endLineRight, lineThickness);
+        }
+
+        Vector3 finishingLineCorner = new Vector3(width * cellSize.x, height * cellSize.y) + originPosition;
+        Vector3 finishingLineTop = new Vector3(0, height * cellSize.y) + originPosition;
+        Vector3 finishingLineRight = new Vector3(width * cellSize.x, 0) + originPosition;
+
+        Handles.DrawLine(finishingLineTop, finishingLineCorner, lineThickness);
+        Handles.DrawLine(finishingLineRight, finishingLineCorner, lineThickness);
+
+
     }
 
 

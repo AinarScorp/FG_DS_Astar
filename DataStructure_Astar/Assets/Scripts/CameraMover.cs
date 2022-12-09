@@ -8,9 +8,10 @@ public class CameraMover : MonoBehaviour
 {
     [SerializeField] float startingSpeed = 2.0f;
     [SerializeField] float speedIncrease = 1;
-    [SerializeField] Camera thisCamera;
-    float currentSpeed;
     [SerializeField] float cameraSizeChangeSpeed = 2;
+    
+    float currentSpeed;
+    Camera thisCamera;
 
     void Awake()
     {
@@ -25,9 +26,7 @@ public class CameraMover : MonoBehaviour
 
     void Update()
     {
-        
         MouseScroll();
-
         Move();
     }
 
@@ -56,7 +55,6 @@ public class CameraMover : MonoBehaviour
         {
             return;
         }
-        
         if (Input.GetKey(KeyCode.LeftShift))
         {
             ChangeCameraSize(scrollDelta);
@@ -64,9 +62,7 @@ public class CameraMover : MonoBehaviour
         else
         {
             ChangeSpeed(scrollDelta);
-            
         }
-
     }
 
     void ChangeCameraSize(float scrollDelta)

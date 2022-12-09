@@ -7,11 +7,8 @@ public class TileType : ScriptableObject //think about the name/rename
     [SerializeField] Color typeColor = Color.white;
     [SerializeField] bool isWalkable = true;
     [SerializeField] int walkingCost = 1;
-
-
+    
     public Color TypeColor => typeColor;
-
     public bool IsWalkable => isWalkable;
-
     public int WalkingCost => walkingCost;
 }

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1779513324060221668}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 2986772963771313676}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4, y: 4, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6656798100080460127}
@@ -45,22 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59ec2e6372db51643b1946c28149d98d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerColor: {r: 0, g: 1, b: 0, a: 1}
-  playerRadius: 2
-  playerStepTime: 0.5
-  colorTime: 2
-  foundPathColor: {r: 0, g: 1, b: 1, a: 1}
-  currentNode:
-    coordinates:
-      x: 0
-      y: 0
-    estimateCost: 0
-    fromStartCost: 0
-    combinedCost: 0
-    tileType: {fileID: 0}
-    previousTileType: {fileID: 0}
+  playerInfo: {fileID: 11400000, guid: 8f1f3c936f4f1434fb92c28d24abe10d, type: 2}
+  currentCoordinates:
+    x: 0
+    y: 0
   generator: {fileID: 0}
-  pathfinding: {fileID: 0}
 --- !u!1 &3246143955740451336
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
 
 [CreateAssetMenu(fileName = "Generator scriptable", menuName = "ScriptableObjects/Generator scriptable", order = 1)]
-public class GridGeneratorScriptableObject : ScriptableObject
+public class GridGeneratorInfoGUI : ScriptableObject
 {
     [SerializeField] GridGenerator gridGeneratorPrefab;
     
@@ -16,9 +14,7 @@ public class GridGeneratorScriptableObject : ScriptableObject
 
 
     public float PointerRadius => pointerRadius;
-
     public Color PointerColor => pointerColor;
-
     public GridGenerator GridGeneratorPrefab => gridGeneratorPrefab;
 
     public void VisualisePointer(Vector3 mousePosition, Vector3 normal)

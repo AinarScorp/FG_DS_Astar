@@ -22,7 +22,6 @@ public class TestingPQ : MonoBehaviour
             priorityQueue.Enqueue(integet);
         }
 
-
         for (int i = 0; i < array.Length; i++)
         {
             int number = priorityQueue.ExtractMin();
@@ -30,7 +29,7 @@ public class TestingPQ : MonoBehaviour
         }
 
     }
-    [ContextMenu("Generate Random Numers")]
+    [ContextMenu("Generate Random Numbers")]
     void CreateRandomArray()
     {
         array = new int[arrayLength];

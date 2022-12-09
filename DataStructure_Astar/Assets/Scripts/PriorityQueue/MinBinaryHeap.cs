@@ -7,18 +7,16 @@ namespace Algorithms
 {
     [Serializable]
     public class MinBinaryHeap<TElement> where TElement: IComparable<TElement>
-    {
-        public TElement[] HeapArray;
-        public int Capacity => HeapArray.Length;
-        
-        public int currentHeapSize = 0;
+    { 
+        int currentHeapSize = 0;
+        TElement[] heapArray;
+        int capacity => heapArray.Length;
+        public int CurrentHeapSize => currentHeapSize;
         
         int GetParentIndex(int index)
         {
             return (index - 1) / 2;
         }
-        
-
         int GetLeftChildIndex(int index)
         {
             return 2 * index + 1;
@@ -31,12 +29,12 @@ namespace Algorithms
 
         public MinBinaryHeap(int capacity)
         {
-            HeapArray = new TElement[capacity];
+            heapArray = new TElement[capacity];
         }
 
         public void Insert(TElement key)
         {
-            if (currentHeapSize == Capacity)
+            if (currentHeapSize == capacity)
             {
                 Debug.LogError("Array is beyond capacity");
                 return;
@@ -44,13 +42,12 @@ namespace Algorithms
 
             int index = currentHeapSize;
 
-            HeapArray[index] = key;
+            heapArray[index] = key;
             currentHeapSize++;
 
-            // while (index != 0 && HeapArray[index] < HeapArray[GetParentIndex(index)])
-            while (index != 0 && HeapArray[index].CompareTo(HeapArray[GetParentIndex(index)]) < 0)
+            while (index != 0 && heapArray[index].CompareTo(heapArray[GetParentIndex(index)]) < 0)
             {
-                Swap(ref HeapArray[index], ref HeapArray[GetParentIndex(index)]);
+                Swap(ref heapArray[index], ref heapArray[GetParentIndex(index)]);
                 index = GetParentIndex(index);
             }
         }
@@ -61,17 +58,16 @@ namespace Algorithms
             {
                 return default;
             }
-  
             if (currentHeapSize == 1)
             {
 
                 currentHeapSize--;
-                return HeapArray[0];
+                return heapArray[0];
             }
             
-            TElement root = HeapArray[0];
+            TElement root = heapArray[0];
   
-            HeapArray[0] = HeapArray[currentHeapSize - 1];
+            heapArray[0] = heapArray[currentHeapSize - 1];
             currentHeapSize--;
             MinHeapify(0);
   
@@ -82,10 +78,9 @@ namespace Algorithms
         {
             if (currentHeapSize <= 0)
             {
-                Debug.Log("boo");
                 return default;
             }
-            return HeapArray[0];
+            return heapArray[0];
         }
         
         public void MinHeapify(int key)
@@ -94,21 +89,19 @@ namespace Algorithms
             int rightChildIndex = GetRightChildIndex(key);
   
             int smallest = key;
-            // if (leftChildIndex < currentHeapSize && HeapArray[leftChildIndex] < HeapArray[smallest])
-            if (leftChildIndex < currentHeapSize && HeapArray[leftChildIndex].CompareTo(HeapArray[smallest]) < 0)
+            if (leftChildIndex < currentHeapSize && heapArray[leftChildIndex].CompareTo(heapArray[smallest]) < 0)
             {
                 smallest = leftChildIndex;
             }
-            // if (rightChildIndex < currentHeapSize && HeapArray[rightChildIndex] < HeapArray[smallest])
-            if (rightChildIndex < currentHeapSize && HeapArray[rightChildIndex].CompareTo(HeapArray[smallest]) < 0)
+            if (rightChildIndex < currentHeapSize && heapArray[rightChildIndex].CompareTo(heapArray[smallest]) < 0)
             {
                 smallest = rightChildIndex;
             }
       
             if (smallest != key)
             {
-                Swap(ref HeapArray[key], 
-                    ref HeapArray[smallest]);
+                Swap(ref heapArray[key], 
+                    ref heapArray[smallest]);
                 MinHeapify(smallest);
             }
         }
@@ -118,24 +111,7 @@ namespace Algorithms
             leftSide = rightSide;
             rightSide = temp;
         }
-
-
-
     }
-
-    // [Serializable]
-    // public class BinaryNode
-    // {
-    //     public int Value;
-    //     public BinaryNode LeftNode, RightNode;
-    //
-    //     BinaryNode(int value)
-    //     {
-    //         Value = value;
-    //         LeftNode = RightNode = null;
-    //     }
-    // }
-    
 }
 
 

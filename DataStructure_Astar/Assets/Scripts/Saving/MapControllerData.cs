@@ -17,16 +17,7 @@ public class MapControllerData
     [SerializeField] FloatColorInfo coordinatesGizmosInfo;
 
     [SerializeField] Vector2Int playerPosition;
-
     
-    #region Properties
-
-    public FloatColorInfo GridLineInfo => gridLineInfo;
-    public FloatColorInfo CoordinatesGizmosInfo => coordinatesGizmosInfo;
-
-    public Vector2Int PlayerPosition => playerPosition;
-
-    #endregion
 
     public MapControllerData() { }
     public MapControllerData(int width, int height, Vector2 cellSize)
@@ -61,8 +52,7 @@ public class MapControllerData
         string jsonGridData = File.ReadAllText(Application.dataPath + FILE_NAME);
         return JsonUtility.FromJson<MapControllerData>(jsonGridData);
     }
-    
-    
+
     public void LoadGridData(ref int width,ref int height, ref Vector2 cellSize)
     {
         width = this.width;

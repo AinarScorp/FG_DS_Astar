@@ -5,141 +5,170 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    //Player info
-    [SerializeField] Color playerColor = Color.green;
-    [SerializeField] float playerRadius = 2;
-    [SerializeField] float playerStepTime = 0.5f;
-    
-    //Found path Info
-    [SerializeField] float colorTime = 2;
-    [SerializeField] Color foundPathColor = Color.cyan;
-    
-    
-    [SerializeField] Coordinates currentCoordinates;
-    [SerializeField] GridGenerator generator;
+    [SerializeField] PlayerInfo playerInfo;
 
-    [SerializeField] Pathfinding pathfinding;
-    CustomGrid<Node> currentGrid => generator.NodeGrid;
+    [SerializeField,HideInInspector] GridGenerator generator;
+    [SerializeField,HideInInspector] Coordinates currentCoordinates;
+
+    //cached
+    PathfindingVisualiser pathfindingVisualiser;
+    Camera mainCam;
     
-    List<Node> listOfNodes;
     Coroutine findingPath;
+    CustomGrid<Node> currentGrid => generator.NodeGrid;
 
     #region Setup
-
-    
-
     void Awake()
     {
-        DestroyItselfIfPlayerExists();
+        pathfindingVisualiser = FindObjectOfType<PathfindingVisualiser>();
+        mainCam = Camera.main;
     }
-
-    void DestroyItselfIfPlayerExists()
-    {
-        Player player = FindObjectOfType<Player>();
-        if (player != this)
-        {
-            DestroyImmediate(this.gameObject);
-        }
-    }
-    #endregion
-
     void Start()
     {
-        transform.position =currentGrid.GetWorldPosFromCoords(currentCoordinates);
+        SetupPlayer();
     }
-
-    void Update()
+    void SetupPlayer()
     {
-        StartPathfinding();
+        transform.position = currentGrid.GetWorldPosFromCoords(currentCoordinates);
+        transform.localScale *= playerInfo.PlayerRadius *2;
+        MeshRenderer meshRenderer = GetComponentInChildren<MeshRenderer>();
+        meshRenderer.material.color = playerInfo.PlayerColor;
     }
-    
-    
-    public void CreatePlayer(GridGenerator generator, Node startingNode)
+    public void GeneratePlayer(GridGenerator generator, Node startingNode)
     {
         if (!startingNode.IsWalkable)
         {
             return;
         }
-
         currentCoordinates = startingNode.Coordinates;
         this.generator = generator;
     }
+    #endregion
 
-
+    void Update()
+    {
+        StartPathfinding();
+    }
     IEnumerator FindPath(Node endNode)
     {
-        if (pathfinding ==null)
-        {
-            pathfinding = FindObjectOfType<Pathfinding>();
-        }
-
-
         Node currentNode = currentGrid.GetGridType(currentCoordinates);
-        IEnumerator target = pathfinding.FindPath(currentNode, endNode);
-        yield return target;
-        target = pathfinding.FindPath(currentNode, endNode);
-        listOfNodes = new List<Node>();
-        while (target.MoveNext())
-        {
-            if (target.Current?.GetType() == typeof(List<Node>))
-            {
+        yield return pathfindingVisualiser.FindPathVisualised(currentNode, endNode);;
         
-                listOfNodes = (List<Node>)target.Current;
-                break;
-            }
+        List<Node> path = pathfindingVisualiser.FindPath(currentNode, endNode);
+        
+        foreach (var node in path)
+        {
+            yield return ColorNode(node);
         }
         
-        foreach (var node in listOfNodes)
+        foreach (var node in path)
         {
-            generator.SetSpriteColor(node,foundPathColor);
-            yield return new WaitForSeconds(colorTime);
+            yield return TakeOneStep(node);
         }
-        foreach (var node in listOfNodes)
-        {
-            currentCoordinates = node.Coordinates;
-            this.transform.position = currentGrid.GetWorldPosFromCoords(currentCoordinates);
-            yield return new WaitForSeconds(playerStepTime);
-        }
-
         findingPath = null;
     }
 
+    object TakeOneStep(Node node)
+    {
+        currentCoordinates = node.Coordinates;
+        transform.position = currentGrid.GetWorldPosFromCoords(currentCoordinates);
+        return new WaitForSeconds(playerInfo.PlayerStepTime);
+    }
 
-
-
+    object ColorNode(Node node)
+    {
+        generator.Visualiser.SetTempSpriteColor(node, playerInfo.FoundPathColor);
+        return new WaitForSeconds(playerInfo.PathColoringTime);
+    }
 
     void StartPathfinding()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            currentGrid.GetGridCoordsFromWorld(mousePos, out int x, out int y);
-
-            Node destinationNode = currentGrid.GetGridType(x, y);
-
+            if (findingPath != null)
+            {
+                StopPreviousPathfinding();
+            }
+            Node destinationNode = GetDestinationNode();
             if (destinationNode != null)
             {
-                if (findingPath != null)
-                {
-                    StopCoroutine(findingPath);
-                    findingPath = null;
-                }
-
                 findingPath = StartCoroutine(FindPath(destinationNode));
             }
         }
     }
+    void StopPreviousPathfinding()
+    {
+        StopCoroutine(findingPath);
+        pathfindingVisualiser.ResetNodeTexts();
+        findingPath = null;
+    }
+    Node GetDestinationNode()
+    {
+        Vector3 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
+        currentGrid.GetGridCoordsFromWorld(mousePos, out int x, out int y);
 
-
+        Node destinationNode = currentGrid.GetGridType(x, y);
+        return destinationNode;
+    }
+    
     void OnDrawGizmos()
     {
+        if (generator == null || playerInfo == null)
+        {
+            return;
+        }
         Node currentNode = currentGrid.GetGridType(currentCoordinates);
-
         if (currentNode == null) return;
         
         Vector3 playerPos = currentGrid.GetWorldPosFromCoords(currentNode.Coordinates);
 
-        Gizmos.color = playerColor;
-        Gizmos.DrawSphere(playerPos, playerRadius);
+        Gizmos.color = playerInfo.PlayerColor;
+        Gizmos.DrawSphere(playerPos, playerInfo.PlayerRadius);
     }
 }
+
+
+#region StoredForFutureReference COROUTINES ABILITY
+
+
+// IEnumerator FindPath(Node endNode)
+// {
+//     if (pathfindingVisualiser ==null)
+//     {
+//         pathfindingVisualiser = FindObjectOfType<Pathfinding>();
+//     }
+//
+//
+//     Node currentNode = currentGrid.GetGridType(currentCoordinates);
+//     IEnumerator target = pathfindingVisualiser.FindPathVisualised(currentNode, endNode);
+//     yield return target;
+//         
+//         
+//     target = pathfindingVisualiser.FindPath(currentNode, endNode);
+//     listOfNodes = new List<Node>();
+//     while (target.MoveNext())
+//     {
+//         if (target.Current?.GetType() == typeof(List<Node>))
+//         {
+//         
+//             listOfNodes = (List<Node>)target.Current;
+//             break;
+//         }
+//     }
+//         
+//     foreach (var node in listOfNodes)
+//     {
+//         generator.Visualiser.SetSpriteColor(node,foundPathColor);
+//         yield return new WaitForSeconds(colorTime);
+//     }
+//     foreach (var node in listOfNodes)
+//     {
+//         currentCoordinates = node.Coordinates;
+//         this.transform.position = currentGrid.GetWorldPosFromCoords(currentCoordinates);
+//         yield return new WaitForSeconds(playerStepTime);
+//     }
+//
+//     findingPath = null;
+// }
+
+#endregion

@@ -41,9 +41,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8270301413885335668}
   - component: {fileID: 8270301413885335669}
+  - component: {fileID: -1528657717379244345}
   m_Layer: 0
-  m_Name: GridGenerator
-  m_TagString: Untagged
+  m_Name: Grid
+  m_TagString: Grid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -77,16 +78,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c1b1ed556af9e844b624e42de6db5aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  square1x1: {fileID: 51278542528387857, guid: 4da55e2064adbce49bad4365cb95fcb6, type: 3}
   nodeGrid:
     width: 0
     height: 0
     cellSize: {x: 0, y: 0}
     originPosition: {x: 0, y: 0, z: 0}
-    storedGridArrayElements: []
+    TgridTypeSerializer:
+      width: 0
+      height: 0
+      storedGridArrayElements: []
+  defaultTileType: {fileID: 11400000, guid: b34e0cd668029804e9392ff7715cfa62, type: 2}
+  visualiser: {fileID: -1528657717379244345}
+--- !u!114 &-1528657717379244345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8270301413885335666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45e2423f0461a9a44947ae7f3dadaf6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   parentForTexts: {fileID: 2272425532654461556}
   parentForSprites: {fileID: 5583027454982959795}
-  storedGridArrayElements: []
+  generator: {fileID: 8270301413885335669}
+  square1x1: {fileID: 3936644586909986172, guid: 4da55e2064adbce49bad4365cb95fcb6,
+    type: 3}
+  squareSerializer:
+    width: 0
+    height: 0
+    storedGridArrayElements: []
 --- !u!1 &8991821942719845465
 GameObject:
   m_ObjectHideFlags: 0

@@ -32,7 +32,7 @@ namespace Algorithms
 
         public bool IsEmpty()
         {
-            return heap.currentHeapSize < 1;
+            return heap.CurrentHeapSize < 1;
         }
 
 

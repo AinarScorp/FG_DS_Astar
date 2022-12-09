@@ -10,14 +10,11 @@ public class Square1x1 : MonoBehaviour
 
     [SerializeField] Color defaultChildColor;
 
+    public SpriteRenderer ThisSprite => thisSprite;
+    public SpriteRenderer ChildSprite => childSprite;
+    public Color DefaultChildColor => defaultChildColor;
     void Awake()
     {
         defaultChildColor = childSprite.color;
     }
-
-    public SpriteRenderer ThisSprite => thisSprite;
-
-    public SpriteRenderer ChildSprite => childSprite;
-
-    public Color DefaultChildColor => defaultChildColor;
 }

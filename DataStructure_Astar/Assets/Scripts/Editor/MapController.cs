@@ -13,7 +13,6 @@ public class MapController : EditorWindow
 
     Vector2 scrollPos;
 
-
     //grid setup info
     int width;
     int height;
@@ -23,31 +22,25 @@ public class MapController : EditorWindow
     Color coordsColor = Color.magenta;
     float coordsFontSize = 8;
 
-    //VisualiseGrid
+    //VisualiseNewGrid
     float lineThickness = 2;
     Color lineColor = Color.green;
-
-
+    
     bool settingTiles;
-
     
     //Player stuff
     Vector2Int playerPosition;
-    
-    
-    
+
     Player testPlayer;
 
-
     GridGenerator gridGenerator;
-    GridGeneratorScriptableObject gridGeneratorScriptableObject;
+    GridGeneratorInfoGUI gridGeneratorInfoGUI;
 
     CustomGrid<Node> nodeGrid => generator.NodeGrid;
 
-    TileType currentTileType = null;
+    [SerializeField] TileType currentTileType = null;
     TileType[] tileTypes;
 
-    //need to search for tiles
     TileType[] TileTypes
     {
         get
@@ -63,15 +56,13 @@ public class MapController : EditorWindow
     
 
     #region Properties
-    
-
     GridGenerator generator
     {
         get
         {
             if (gridGenerator == null)
             {
-                gridGenerator = FindObjectOfType<GridGenerator>();
+                gridGenerator = GameObject.FindWithTag("Grid")?.GetComponent<GridGenerator>();
                 if (gridGenerator == null)
                 {
                     gridGenerator = Instantiate(generatorScriptable.GridGeneratorPrefab);
@@ -82,18 +73,16 @@ public class MapController : EditorWindow
             return gridGenerator;
         }
     }
-
-
-    GridGeneratorScriptableObject generatorScriptable
+    GridGeneratorInfoGUI generatorScriptable
     {
         get
         {
-            if (gridGeneratorScriptableObject == null)
+            if (gridGeneratorInfoGUI == null)
             {
-                gridGeneratorScriptableObject = Resources.Load<GridGeneratorScriptableObject>("Generator scriptable");
+                gridGeneratorInfoGUI = Resources.Load<GridGeneratorInfoGUI>("Generator scriptable");
             }
 
-            return gridGeneratorScriptableObject;
+            return gridGeneratorInfoGUI;
         }
     }
     #endregion
@@ -214,15 +203,21 @@ public class MapController : EditorWindow
                     return;
                 }
 
+                
                 if (testPlayer == null)
                 {
+                    Player existingPlayer = GameObject.FindWithTag("Player")?.GetComponent<Player>();
+                    if (existingPlayer !=null)
+                    {
+                        DestroyImmediate(existingPlayer.gameObject);
+                    }
                     testPlayer = Resources.Load<Player>("Player");
                     testPlayer = Instantiate(testPlayer);
                 }
                 Undo.RecordObject(testPlayer, "Generator to save");
 
                 
-                testPlayer.CreatePlayer(generator,startPlayerPosNode);
+                testPlayer.GeneratePlayer(generator,startPlayerPosNode);
 
             });
         
@@ -232,7 +227,7 @@ public class MapController : EditorWindow
     {
         if (tryToFind)
         {
-            testPlayer = FindObjectOfType<Player>();
+            testPlayer = GameObject.FindWithTag("Player")?.GetComponent<Player>();
         }
         if (testPlayer !=null)
         {
@@ -286,6 +281,10 @@ public class MapController : EditorWindow
     void CreateGrid()
     {
         Undo.RecordObject(generator, "Generator to save");
+        if (generator!= null)
+        {
+            DestroyImmediate(generator.gameObject);
+        }
         generator.CreateGrid(width, height, cellSize);
         SetupPlayer();
 
@@ -304,7 +303,7 @@ public class MapController : EditorWindow
     void DisplayCoordinatesOptions()
     {
         InsertLabel("Coordinates Debugging");
-        if (!generator.DisplayingCoordinates())
+        if (!generator.Visualiser.DisplayingCoordinates())
         {
             coordsColor = EditorGUILayout.ColorField("Coordinates Color", coordsColor);
             coordsFontSize = EditorGUILayout.FloatField("Coordinates Font Size", coordsFontSize);
@@ -324,12 +323,12 @@ public class MapController : EditorWindow
     void DisplayGridCoordinates()
     {
         RemoveGridCoordinates();
-        generator.DisplayGridCoordinates(coordsColor, coordsFontSize);
+        generator.Visualiser.DisplayGridCoordinates(coordsColor, coordsFontSize);
     }
 
     void RemoveGridCoordinates()
     {
-        generator.DeleteCoordsText();
+        generator.Visualiser.DeleteCoordsText();
     }
 
     #endregion
