@@ -7,6 +7,8 @@ public class Player : MonoBehaviour
 {
     [SerializeField] PlayerInfo playerInfo;
 
+    [SerializeField] float playerStepTime = 1f;
+    [SerializeField] float pathColoringTime = 1f;
     [SerializeField,HideInInspector] GridGenerator generator;
     [SerializeField,HideInInspector] Coordinates currentCoordinates;
 
@@ -72,26 +74,26 @@ public class Player : MonoBehaviour
     {
         currentCoordinates = node.Coordinates;
         transform.position = currentGrid.GetWorldPosFromCoords(currentCoordinates);
-        return new WaitForSeconds(playerInfo.PlayerStepTime);
+        return new WaitForSeconds(playerStepTime);
     }
 
     object ColorNode(Node node)
     {
         generator.Visualiser.SetTempSpriteColor(node, playerInfo.FoundPathColor);
-        return new WaitForSeconds(playerInfo.PathColoringTime);
+        return new WaitForSeconds(pathColoringTime);
     }
 
     void StartPathfinding()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (findingPath != null)
-            {
-                StopPreviousPathfinding();
-            }
             Node destinationNode = GetDestinationNode();
             if (destinationNode != null)
             {
+                if (findingPath != null)
+                {
+                    StopPreviousPathfinding();
+                }
                 findingPath = StartCoroutine(FindPath(destinationNode));
             }
         }
@@ -100,7 +102,6 @@ public class Player : MonoBehaviour
     {
         StopCoroutine(findingPath);
         pathfindingVisualiser.ResetNodeTexts();
-        findingPath = null;
     }
     Node GetDestinationNode()
     {
@@ -125,6 +126,17 @@ public class Player : MonoBehaviour
         Gizmos.color = playerInfo.PlayerColor;
         Gizmos.DrawSphere(playerPos, playerInfo.PlayerRadius);
     }
+
+    public void ChangeColoringPace(float newValue)
+    {
+        pathColoringTime = newValue;
+    }
+    public void ChangeStepPace(float newValue)
+    {
+        playerStepTime = newValue;
+    }
+    
+    
 }
 
 

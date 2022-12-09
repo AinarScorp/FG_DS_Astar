@@ -17,7 +17,7 @@ public class PathfindingVisualiser : Pathfinding
 
         StartNewSearch(startNode, endNode);
         ResetNodeTexts(); 
-        generator.Visualiser.SetSpriteColor(endNode, Color.cyan);
+        generator.Visualiser.SetTempSpriteColor(endNode, Color.cyan);
 
         
         while (!openList.IsEmpty())
@@ -57,6 +57,7 @@ public class PathfindingVisualiser : Pathfinding
             }
             RestoreColor(currentNode);
         }
+        RestoreColor(endNode);
         Debug.Log("No Path found");
     }
 
@@ -112,6 +113,11 @@ public class PathfindingVisualiser : Pathfinding
     void VisualiseNodeCost(Node node, int fromStartCost, int estimateToGoalCost)
     {
         node.Visualiser.VisualiseCosts(fromStartCost,estimateToGoalCost);
+    }
+
+    public void ChangePathfindingPace(float newValue)
+    {
+        generalWaitTime = newValue;
     }
 
     void OnDrawGizmos()

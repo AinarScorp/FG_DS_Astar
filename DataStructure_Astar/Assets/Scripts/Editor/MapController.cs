@@ -240,7 +240,7 @@ public class MapController : EditorWindow
         if (nodeGrid == null) return;
         InsertLabel("Set Tiles");
 
-        ButtonGUI($"Setting Walls: {StringsGUI.YesNoTextFromBool(settingTiles)}", () =>
+        ButtonGUI($"Changing tiles: {StringsGUI.YesNoTextFromBool(settingTiles)}", () =>
         {
             settingTiles = !settingTiles;
         });

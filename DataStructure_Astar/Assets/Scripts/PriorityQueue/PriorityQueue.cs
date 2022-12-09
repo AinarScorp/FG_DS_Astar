@@ -9,7 +9,6 @@ namespace Algorithms
     [Serializable]
     public class PriorityQueue<TElement> where TElement : IComparable<TElement>
     {
-
         MinBinaryHeap<TElement> heap;
 
         public PriorityQueue(int capacity)

@@ -8,7 +8,6 @@ public class Pathfinding : MonoBehaviour
     const int DIAGONAL_MOVE_COST = 14;
     const int STRAIGHT_MOVE_COST = 10;
     
-    
     protected PriorityQueue<Node> openList;
     protected Dictionary<Node, int> costFromStart;
     protected Dictionary<Node, Node> cameFromNode;

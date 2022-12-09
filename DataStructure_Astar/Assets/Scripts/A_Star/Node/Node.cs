@@ -8,12 +8,10 @@ public class Node: IComparable<Node>
     [SerializeField] int heuristicCost;
     [SerializeField] Coordinates coordinates;
     
-    
     [SerializeField] TileType tileType;
     [SerializeField] TileType previousTileType; //Undo imitation
     
     [SerializeField] NodeVisualiser visualiser;
-
 
     public event Action<Node> OnTileTypeChanged;
 

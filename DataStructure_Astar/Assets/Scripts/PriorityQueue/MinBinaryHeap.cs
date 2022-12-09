@@ -60,7 +60,6 @@ namespace Algorithms
             }
             if (currentHeapSize == 1)
             {
-
                 currentHeapSize--;
                 return heapArray[0];
             }
